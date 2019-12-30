@@ -6,16 +6,24 @@ import gr.fpas.bank.be.AccountGroup.{AccountsList, AvailableAccount, Command, Re
 
 object AccountGroup {
 
+  // Protocol ~ messages interface of AccountProcessor
+
+  // Interface of actor incoming messages (Commands)
   sealed trait Command
 
+  // Request a new or existing account holder for a given accountId
   final case class RequestAccount(accountId: String, replyTo: ActorRef[Response]) extends Command
 
+  // Request the all the (online) available account holders
   final case class RequestAccounts(replyTo: ActorRef[Response]) extends Command
 
+  // Interface of actor outgoing messages (Responses)
   trait Response
 
+  // Response of an available account holder
   final case class AvailableAccount(accountId: String, account: ActorRef[AccountHolder.Command]) extends Response
 
+  // Response of all the (online) available account holders
   final case class AccountsList(accounts: Seq[String]) extends Response
 
   /**
@@ -26,8 +34,9 @@ object AccountGroup {
 }
 
 /**
- * Implementation of an actor that holds account state.
- * There is ONE ACTOR PER ACCOUNT discriminated by a specific accountId.
+ * Implementation of AccountGroup
+ * This actor is creating AccountHolder(s) upon request
+ * and holds the current list of all the created account actors.
  *
  * This is an example of actor class implementation.
  *
@@ -70,5 +79,4 @@ class AccountGroup(context: ActorContext[Command])
         newAccount
     }
   }
-
 }

@@ -2,10 +2,9 @@ package gr.fpas.bank.be
 
 import akka.actor.typed.ActorSystem
 import gr.fpas.bank.be.AccountGroup.RequestAccount
-import gr.fpas.bank.be.AccountHolder.{AccountBalance, Deposit, GetBalance, Response, Withdraw}
+import gr.fpas.bank.be.AccountHolder.{Deposit, GetBalance, Response}
 
 import scala.concurrent.{Await, Future}
-import scala.util.{Failure, Success}
 
 // Needed for ask pattern
 import akka.actor.typed.scaladsl.AskPattern._
