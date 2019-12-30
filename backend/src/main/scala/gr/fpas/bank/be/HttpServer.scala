@@ -1,5 +1,6 @@
 package gr.fpas.bank.be
 
+import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.Behaviors
 import akka.{Done, actor => classic}
 import akka.http.scaladsl.Http
@@ -17,7 +18,7 @@ object HttpServer {
   // This example is actor is inspired from
   // https://github.com/chbatey/akka-http-typed/blob/master/src/main/scala/info/batey/QuickstartServer.scala
 
-  def apply() = Behaviors.setup[Done] { context =>
+  def apply(accountGroup: ActorRef[AccountGroup.Command]) = Behaviors.setup[Done] { context =>
 
     context.log.info(s"Http actor  started")
 
@@ -28,7 +29,8 @@ object HttpServer {
     implicit val ec: ExecutionContext = context.system.executionContext
 
 
-    val serverBinding: Future[Http.ServerBinding] = Http().bindAndHandle(AccountEndpoint.routes, "0.0.0.0", 8080)
+    val api = AccountApi(accountGroup, context.system)
+    val serverBinding: Future[Http.ServerBinding] = Http().bindAndHandle(api.routes, "0.0.0.0", 8080)
 
     serverBinding.onComplete { // Another pattern matching anonymous function
       case Success(bound) =>

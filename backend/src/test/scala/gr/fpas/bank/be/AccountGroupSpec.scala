@@ -9,8 +9,6 @@ class AccountGroupSpec extends ScalaTestWithActorTestKit with WordSpecLike {
   "AccountGroup actor" should {
 
     "be initialized with empty accounts state" in {
-      val accountId = "ACC_1"
-
       val actor = spawn(AccountGroup())
 
       val probe = createTestProbe[Response]
@@ -37,8 +35,7 @@ class AccountGroupSpec extends ScalaTestWithActorTestKit with WordSpecLike {
       val accountProbe = createTestProbe[AccountHolder.Response]()
       val accountHolder = msg.account
 
-      accountHolder ! AccountHolder.Deposit(accountId, 23)
-      accountHolder ! AccountHolder.GetBalance(accountId, accountProbe.ref)
+      accountHolder ! AccountHolder.Deposit(accountId, 23, accountProbe.ref)
 
       val balance = accountProbe.expectMessageType[AccountHolder.AccountBalance]
       balance.accountId shouldBe accountId

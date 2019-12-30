@@ -1,6 +1,6 @@
 package gr.fpas.bank.be
 
-import akka.actor.typed.{ActorSystem, Behavior}
+import akka.actor.typed.ActorSystem
 
 /**
  * This is the "main" class called Runner

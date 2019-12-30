@@ -26,7 +26,7 @@ object MainSupervisor {
     context.watch(accountGroup)
 
     // Start and watch HttpServer actor
-    val httpServer = context.spawn(HttpServer(), "HttpServer")
+    val httpServer = context.spawn(HttpServer(accountGroup), "HttpServer")
     context.watch(httpServer)
 
     // This actor only receives and handles signals from the monitored children

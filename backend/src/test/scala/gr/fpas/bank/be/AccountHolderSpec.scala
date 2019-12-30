@@ -29,7 +29,8 @@ class AccountHolderSpec extends ScalaTestWithActorTestKit with WordSpecLike {
 
       val probe = createTestProbe[Response]
 
-      actor ! Deposit(accountId, 11)
+      actor ! Deposit(accountId, 11, probe.ref)
+      probe.receiveMessage()
 
       actor ! GetBalance(accountId, probe.ref)
       val response = probe.expectMessageType[AccountBalance]
@@ -45,7 +46,8 @@ class AccountHolderSpec extends ScalaTestWithActorTestKit with WordSpecLike {
 
       val probe = createTestProbe[Response]
 
-      actor ! Withdraw(accountId, 1)
+      actor ! Withdraw(accountId, 1, probe.ref)
+      probe.receiveMessage()
 
       actor ! GetBalance(accountId, probe.ref)
       val response = probe.expectMessageType[AccountBalance]

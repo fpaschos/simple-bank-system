@@ -29,7 +29,7 @@ object AccountGroup {
   /**
    * Actor builder method
    */
-  def apply() : Behavior[Command] = Behaviors.setup(context => new AccountGroup(context))
+  def apply(): Behavior[Command] = Behaviors.setup(context => new AccountGroup(context))
 
 }
 
@@ -45,7 +45,7 @@ object AccountGroup {
 class AccountGroup(context: ActorContext[Command])
   extends AbstractBehavior[Command](context) {
 
-  context.log.info("Account group started")
+  context.log.info("AccountGroup started")
 
   private var accounts: Map[String, ActorRef[AccountHolder.Command]] = Map.empty
 
@@ -75,7 +75,7 @@ class AccountGroup(context: ActorContext[Command])
 
       case None =>
         val newAccount = context.spawn(AccountHolder(accountId), accountId) // NOTE!!! the creation of a child actor using spawn
-        accounts += accountId -> newAccount  // Adds a key value pair to the map ~ (accountId, newAccount) NOTE!!! Map is IMMUTABLE data structure
+        accounts += accountId -> newAccount // Adds a key value pair to the map ~ (accountId, newAccount) NOTE!!! Map is IMMUTABLE data structure
         newAccount
     }
   }

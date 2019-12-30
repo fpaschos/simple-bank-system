@@ -12,10 +12,10 @@ object AccountHolder {
   sealed trait Command
 
   // Request to deposit an amount to an  account
-  final case class Deposit(accountId: String, amount: Double) extends Command
+  final case class Deposit(accountId: String, amount: Double, replyTo: ActorRef[Response]) extends Command
 
   // Request to withdraw an amount from an account
-  final case class Withdraw(accountId: String, amount: Double) extends Command
+  final case class Withdraw(accountId: String, amount: Double, replyTo: ActorRef[Response]) extends Command
 
   // Request the current balance from an account
   final case class GetBalance(accountId: String, replyTo: ActorRef[Response]) extends Command
@@ -63,17 +63,16 @@ class AccountHolder(context: ActorContext[Command],
     msg match {
       case cmd: Deposit =>
         balance += cmd.amount  // Change state
-        context.log.info("AccountHolder {} DEPOSIT {} BALANCE {}",accountId, cmd.amount, balance)
+        cmd.replyTo ! AccountBalance(accountId, balance) // Respond with the current balance
         Behaviors.same          // Return the same behavior
 
       case cmd: Withdraw =>
         balance -= cmd.amount  // Change state
-        context.log.info("AccountHolder {} WITHDRAW {} BALANCE {}" ,accountId, cmd.amount, balance)
+        cmd.replyTo ! AccountBalance(accountId, balance) // Respond with the current balance
         Behaviors.same          // Return the same behavior
 
       case cmd: GetBalance =>
         cmd.replyTo ! AccountBalance(accountId, balance) // Respond to the "replyTo" actor with the current balance
-        context.log.info("AccountHolder {} BALANCE RESPONSE {}",accountId, balance)
         Behaviors.same          // Return the same behavior
     }
 }
