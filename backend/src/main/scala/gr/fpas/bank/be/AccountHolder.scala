@@ -36,7 +36,7 @@ object AccountHolder {
 }
 
 /**
- * Implementation of an actor that holds account state.
+ * Implementation of an actor that holds bank account state.
  * There is ONE ACTOR PER ACCOUNT discriminated by a specific accountId.
  *
  * This is an example of actor class implementation.

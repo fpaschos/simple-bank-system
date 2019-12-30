@@ -21,10 +21,13 @@ object MainSupervisor {
 
     context.log.info("MainSupervisor started")
 
-    // Initialize and watch AccountGroup
+    // Start and watch AccountGroup actor
     val accountGroup = context.spawn(AccountGroup(), "AccountGroup")
-
     context.watch(accountGroup)
+
+    // Start and watch HttpServer actor
+    val httpServer = context.spawn(HttpServer(), "HttpServer")
+    context.watch(httpServer)
 
     // This actor only receives and handles signals from the monitored children
     // That is why it does not have protocol messages
