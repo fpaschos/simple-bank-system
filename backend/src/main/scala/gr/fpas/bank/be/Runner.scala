@@ -1,9 +1,10 @@
 package gr.fpas.bank.be
 
 import akka.actor.typed.ActorSystem
+import gr.fpas.bank.be.AccountGroup.RequestAccount
 import gr.fpas.bank.be.AccountHolder.{AccountBalance, Deposit, GetBalance, Response, Withdraw}
 
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 import scala.util.{Failure, Success}
 
 // Needed for ask pattern
@@ -19,11 +20,7 @@ import scala.concurrent.duration._
 object Runner extends App {
   val accountId = "ACC_1"
 
-  val system = ActorSystem[AccountHolder.Command](AccountHolder.create(accountId), "bank-backend-system")
-
-  system ! Deposit(accountId, 2) // The notation "!" is the same as ".tell(...)" in scala
-  system ! Deposit(accountId, 3)
-  system ! Withdraw(accountId, 4)
+  val system = ActorSystem(AccountGroup.create(), "bank-backend-system")
 
   // Ask the current balance via a Future
   // see docs https://doc.akka.io/docs/akka/current/typed/interaction-patterns.html#request-response-with-ask-from-outside-an-actor
@@ -33,22 +30,34 @@ object Runner extends App {
   implicit val scheduler = system.scheduler
   implicit val ec = system.executionContext
 
-
   // asking someone requires a timeout if the timeout hits without response
   // the ask is failed with a TimeoutException
   implicit val timeout: Timeout = 3.seconds
 
+  // Create an account AND THEN ask the balance
+  val groupFuture: Future[AccountGroup.Response] = system.ref.ask[AccountGroup.Response](replyTo => RequestAccount(accountId, replyTo))
 
-  // Ask the final balance and close the system
-  val balance: Future[Response] = system.ref.ask[Response](ref => GetBalance(accountId, ref))
-  balance.onComplete {
+  val balanceFuture: Future[Response] = groupFuture.flatMap(response => {
+    response match {
+      case AccountGroup.AvailableAccount(accountId, account) =>
 
-    case Success(AccountBalance(accountId, balance)) =>  // This is pattern matching
-      println(s"Future Response: Account $accountId balance is $balance")
-      system.terminate()
+        account ! Deposit(accountId, 100)
+        account.ask(replyTo => GetBalance(accountId, replyTo))
+    }
+  })
 
-    case Failure(ex) =>
-      println(s"BOOM! something is wrong: ${ex.getMessage}")
-      system.terminate()
-  }
+  // Blocks the thread until the future is completed
+  val  balance: Response = Await.result(balanceFuture, timeout.duration)
+  println(s"Balance result is $balance")
+
+
+  // Ask again for the account list
+  val accountListFuture: Future[AccountGroup.Response] = system.ref.ask[AccountGroup.Response](replyTo => AccountGroup.RequestAccounts(replyTo))
+  val accountList = Await.result(accountListFuture, timeout.duration)
+
+  println(s"Account list result is $accountList")
+
+
+  // Close the system
+  system.terminate()
 }
