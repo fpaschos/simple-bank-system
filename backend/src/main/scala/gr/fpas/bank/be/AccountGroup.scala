@@ -27,9 +27,9 @@ object AccountGroup {
   final case class AccountsList(accounts: Seq[String]) extends Response
 
   /**
-   * Actor builder method (something like a constructor)
+   * Actor builder method
    */
-  def create() : Behavior[Command] = Behaviors.setup(context => new AccountGroup(context))
+  def apply() : Behavior[Command] = Behaviors.setup(context => new AccountGroup(context))
 
 }
 
@@ -74,7 +74,7 @@ class AccountGroup(context: ActorContext[Command])
         account
 
       case None =>
-        val newAccount = context.spawn(AccountHolder.create(accountId), accountId) // NOTE!!! the creation of a child actor using spawn
+        val newAccount = context.spawn(AccountHolder(accountId), accountId) // NOTE!!! the creation of a child actor using spawn
         accounts += accountId -> newAccount  // Adds a key value pair to the map ~ (accountId, newAccount) NOTE!!! Map is IMMUTABLE data structure
         newAccount
     }

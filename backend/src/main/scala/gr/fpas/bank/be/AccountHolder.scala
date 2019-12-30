@@ -27,11 +27,11 @@ object AccountHolder {
   final case class AccountBalance(accountId: String, balance: Double) extends Response
 
   /**
-   * Actor builder method (something like a constructor)
+   * Actor builder method
    *
    * @param accountId the id of the account
    */
-  def create(accountId: String) : Behavior[Command] = Behaviors.setup(context => new AccountHolder(context, accountId))
+  def apply(accountId: String) : Behavior[Command] = Behaviors.setup(context => new AccountHolder(context, accountId))
 
 }
 
@@ -47,14 +47,15 @@ object AccountHolder {
 class AccountHolder(context: ActorContext[Command],
                     private val accountId: String) extends AbstractBehavior[Command](context) {
 
-  context.log.info("AccountHolder {} STARTED BALANCE {}", accountId, balance)
-
   /**
    * The current account balance initialized with zero value (account is empty)
    *
    * This is internal actor state.
    */
   private var balance = 0.0
+
+  context.log.info("AccountHolder {} STARTED BALANCE {}", accountId, balance)
+
 
   // Handle message commands
   // This is essentially a switch

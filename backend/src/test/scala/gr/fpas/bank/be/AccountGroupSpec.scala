@@ -11,7 +11,7 @@ class AccountGroupSpec extends ScalaTestWithActorTestKit with WordSpecLike {
     "be initialized with empty accounts state" in {
       val accountId = "ACC_1"
 
-      val actor = spawn(AccountGroup.create())
+      val actor = spawn(AccountGroup())
 
       val probe = createTestProbe[Response]
 
@@ -24,7 +24,7 @@ class AccountGroupSpec extends ScalaTestWithActorTestKit with WordSpecLike {
     "be able to create a new account holder" in {
       val accountId = "ACC_1"
 
-      val groupActor = spawn(AccountGroup.create())
+      val groupActor = spawn(AccountGroup())
 
       val probe = createTestProbe[Response]()
 
@@ -48,7 +48,7 @@ class AccountGroupSpec extends ScalaTestWithActorTestKit with WordSpecLike {
     "should return same actor gor same accountId" in {
       val accountId = "ACC_2"
 
-      val groupActor = spawn(AccountGroup.create())
+      val groupActor = spawn(AccountGroup())
 
       val probe = createTestProbe[Response]()
 

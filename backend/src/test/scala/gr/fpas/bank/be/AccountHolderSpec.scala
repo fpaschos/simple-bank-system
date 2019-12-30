@@ -11,7 +11,7 @@ class AccountHolderSpec extends ScalaTestWithActorTestKit with WordSpecLike {
     "should initialized with zero balance" in {
       val accountId = "ACC_1"
 
-      val actor = spawn(AccountHolder.create("ACC_1"))
+      val actor = spawn(AccountHolder("ACC_1"))
 
       val probe = createTestProbe[Response]
 
@@ -25,7 +25,7 @@ class AccountHolderSpec extends ScalaTestWithActorTestKit with WordSpecLike {
     "should add the deposit amount to the balance" in {
       val accountId = "ACC_1"
 
-      val actor = spawn(AccountHolder.create("ACC_1"))
+      val actor = spawn(AccountHolder("ACC_1"))
 
       val probe = createTestProbe[Response]
 
@@ -41,7 +41,7 @@ class AccountHolderSpec extends ScalaTestWithActorTestKit with WordSpecLike {
     "should subtract the withdraw amount from the balance" in {
       val accountId = "ACC_1"
 
-      val actor = spawn(AccountHolder.create("ACC_1"))
+      val actor = spawn(AccountHolder("ACC_1"))
 
       val probe = createTestProbe[Response]
 
