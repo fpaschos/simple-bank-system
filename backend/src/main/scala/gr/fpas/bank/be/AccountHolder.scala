@@ -61,17 +61,17 @@ class AccountHolder(context: ActorContext[Command],
   override def onMessage(msg: Command): Behavior[Command] =
     msg match {
       case cmd: Deposit =>
-        balance  += cmd.amount  // Change state
+        balance += cmd.amount  // Change state
         context.log.info("AccountHolder {} DEPOSIT {} BALANCE {}",accountId, cmd.amount, balance)
         Behaviors.same          // Return the same behavior
 
       case cmd: Withdraw =>
-        balance  -= cmd.amount  // Change state
+        balance -= cmd.amount  // Change state
         context.log.info("AccountHolder {} WITHDRAW {} BALANCE {}" ,accountId, cmd.amount, balance)
         Behaviors.same          // Return the same behavior
 
       case cmd: GetBalance =>
-        cmd.replyTo.tell(AccountBalance(accountId, balance)) // Respond to the "replyTo" actor with the current balance
+        cmd.replyTo ! AccountBalance(accountId, balance) // Respond to the "replyTo" actor with the current balance
         context.log.info("AccountHolder {} BALANCE RESPONSE {}",accountId, balance)
         Behaviors.same          // Return the same behavior
     }
