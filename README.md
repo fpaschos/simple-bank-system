@@ -8,19 +8,26 @@ The code is split and organized to several **branches** in order to reflect
 the progression of the implementation.
 The domain is intentionally left extremely simple in order to display as many akka features as possible.
 
-The code is organized as following: 
+The implementation progress is as following: 
 
 - [Part 1.1](https://github.com/fpaschos/simple-bank-system/tree/part-1.1) 
-Implement a simple  **AccountHolder** actor.
+Create a simple  **AccountHolder** actor.
 
 - [Part 1.2](https://github.com/fpaschos/simple-bank-system/tree/part-1.2)
- Use akka ask pattern to interact with the **AccountHolder** from outside the system.
+Use akka ask pattern to interact with the **AccountHolder** from outside the system.
 
 - [Part 1.3](https://github.com/fpaschos/simple-bank-system/tree/part-1.3) 
-Implement **AccountHolderSpec** tests.
+Create **AccountHolderSpec** tests.
 
 - [Part 2.1](https://github.com/fpaschos/simple-bank-system/tree/part-2.1)
- Implement a **AccountGroup** in memory cache and supervisor actor.
+Create an **AccountGroup** in memory cache and supervisor actor.
  
 - [Part 2.2](https://github.com/fpaschos/simple-bank-system/tree/part-2.2)
-Implement **AccountGroupSpec** tests.
+Create **AccountGroupSpec** tests.
+
+- [Part 3.1](https://github.com/fpaschos/simple-bank-system/tree/part-3.1)
+Create an application **MainSupervisor** actor.
+Create an **HttpServer** server actor with account endpoints.
+
+- [Part 3.2](https://github.com/fpaschos/simple-bank-system/tree/part-3.2)
+Implement **HttpServer** endpoints and integrate the existing account actors.
