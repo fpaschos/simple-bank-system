@@ -4,12 +4,11 @@ Implementation of a simple bank account management system using [akka.io](https:
 The purpose of this repository is to be familiarized with the new [akka-typed](https://doc.akka.io/docs/akka/current/typed/index.html) API.
 
 ### How to read the code
-The code is split and organized to several **branches** in order to reflect 
+The code is split and organized in several **branches** in order to reflect 
 the progression of the implementation.
 The domain is intentionally left extremely simple in order to display as many akka features as possible.
 
 The implementation progress is as following: 
-
 
 ##### Part 1 - A simple actor with tests
 - [Part 1.1](https://github.com/fpaschos/simple-bank-system/tree/part-1.1) 
@@ -28,7 +27,7 @@ Create an `AccountGroup` in memory cache and supervisor actor.
 - [Part 2.2](https://github.com/fpaschos/simple-bank-system/tree/part-2.2)
 Create `AccountGroupSpec` tests.
 
-##### Part 2 - Implement an REST API using `akka-http`
+##### Part 3 - Implement an REST API using `akka-http`
 - [Part 3.1](https://github.com/fpaschos/simple-bank-system/tree/part-3.1)
 Create an application `MainSupervisor` actor.
 Create an `HttpServer` server actor with account endpoints.
