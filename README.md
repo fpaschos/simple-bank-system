@@ -10,24 +10,32 @@ The domain is intentionally left extremely simple in order to display as many ak
 
 The implementation progress is as following: 
 
+
+##### Part 1 - A simple actor with tests
 - [Part 1.1](https://github.com/fpaschos/simple-bank-system/tree/part-1.1) 
-Create a simple  **AccountHolder** actor.
+Create a simple `AccountHolder` actor.
 
 - [Part 1.2](https://github.com/fpaschos/simple-bank-system/tree/part-1.2)
-Use akka ask pattern to interact with the **AccountHolder** from outside the system.
+Use akka ask pattern to interact with the `AccountHolder` from outside the system.
 
 - [Part 1.3](https://github.com/fpaschos/simple-bank-system/tree/part-1.3) 
-Create **AccountHolderSpec** tests.
+Create `AccountHolderSpec` tests.
 
+##### Part 2 - Create a supervisor cache group actor
 - [Part 2.1](https://github.com/fpaschos/simple-bank-system/tree/part-2.1)
-Create an **AccountGroup** in memory cache and supervisor actor.
+Create an `AccountGroup` in memory cache and supervisor actor.
  
 - [Part 2.2](https://github.com/fpaschos/simple-bank-system/tree/part-2.2)
-Create **AccountGroupSpec** tests.
+Create `AccountGroupSpec` tests.
 
+##### Part 2 - Implement an REST API using `akka-http`
 - [Part 3.1](https://github.com/fpaschos/simple-bank-system/tree/part-3.1)
-Create an application **MainSupervisor** actor.
-Create an **HttpServer** server actor with account endpoints.
+Create an application `MainSupervisor` actor.
+Create an `HttpServer` server actor with account endpoints.
 
 - [Part 3.2](https://github.com/fpaschos/simple-bank-system/tree/part-3.2)
-Implement **HttpServer** endpoints and integrate the existing account actors.
+Implement `HttpServer` endpoints and integrate the existing account actors.
+
+- [Part 3.3](https://github.com/fpaschos/simple-bank-system/tree/part-3.3)
+Simulate some account operations traffic.
+Create a `transaction-client` project that uses `akka-stream` API to post continuously random requests to the backend.

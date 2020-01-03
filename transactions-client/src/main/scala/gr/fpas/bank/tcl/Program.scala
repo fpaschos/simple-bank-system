@@ -7,29 +7,32 @@ import akka.{Done, actor => classic}
 
 import scala.concurrent.duration._
 
-object Main extends App {
-  // Create an infinite stream that posts random commands every 2 seconds
+/**
+ * A simple program  that creates an infinite stream that posts multiple random commands every 2 seconds to the backend.
+ */
+object Program extends App {
+
 
   implicit val system = classic.ActorSystem()
   implicit val ec = system.dispatcher
   implicit lazy val mat = Materializer(system)
 
-  val stream = Source.tick(0.second, 2.seconds, ())
-    .mapConcat {
+  val stream = Source.tick(0.second, 2.seconds, ()) // Every 2 seconds
+    .mapConcat {    // Generate random account commands (Deposit or Withdraw)
       _ => mkRandomCommands(500, 500)
     }
-    .log("cmd")
-    .mapAsync(parallelism = 30) { cmd =>
+    .mapAsync(parallelism = 30) { cmd =>  // For each command send a POST request with max 30 parallel
       postCommand(cmd)
     }
     .runWith(Sink.ignore)
 
 
+  // In case of error print the cause and terminate the stream
   stream.recover { error =>
     println(s"Stream error: ${error.getMessage}")
     Done
   }.map { _ =>
-    println("Terminating normally")
+    println("Terminating")
     system.terminate()
   }
 }
