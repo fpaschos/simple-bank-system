@@ -30,7 +30,7 @@ object HttpServer {
 
 
     val api = AccountApi(accountGroup, context.system)
-    val serverBinding: Future[Http.ServerBinding] = Http().bindAndHandle(api.routes, "0.0.0.0", 8080)
+    val serverBinding: Future[Http.ServerBinding] = Http().bindAndHandle(api.routes, "0.0.0.0", 9090)
 
     serverBinding.onComplete { // Another pattern matching anonymous function
       case Success(bound) =>

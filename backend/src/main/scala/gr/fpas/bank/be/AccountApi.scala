@@ -85,7 +85,7 @@ class AccountApi(private val group: ActorRef[AccountGroup.Command],
 
         onSuccess(depositFuture) {
           case resp@AccountBalance(accountId, balance) =>
-            log.info("Deposited [{}]: {}", accountId, balance)
+            log.info("Deposit [{}]: {} => balance {}", accountId, amount, balance)
             complete((StatusCodes.OK, resp))
         }
       }
@@ -109,7 +109,7 @@ class AccountApi(private val group: ActorRef[AccountGroup.Command],
 
         onSuccess(withdrawFuture) {
           case resp@AccountBalance(accountId, balance) =>
-            log.info("Deposited [{}]: {}", accountId, balance)
+            log.info("Withdraw [{}]: {} => balance {}", accountId, amount, balance)
             complete((StatusCodes.OK, resp))
         }
       }
