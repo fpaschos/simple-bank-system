@@ -7,14 +7,14 @@ import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.Directives._
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
-import gr.fpas.bank.be.AccountGroup.{AvailableAccount, RequestAccount}
+import gr.fpas.bank.be.AccountGroup.{AccountsList, AvailableAccount, RequestAccount, RequestAccounts}
 import gr.fpas.bank.be.AccountHolder.{AccountBalance, Deposit, GetBalance, Withdraw}
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
 // Some REST dtos
-final case class Amount(amount: Double)// {"amount": 23.2}
+final case class Amount(amount: Double) // {"amount": 23.2}
 
 // Some json serialization configuration
 object JsonSupport extends SprayJsonSupport {
@@ -40,28 +40,42 @@ class AccountApi(private val group: ActorRef[AccountGroup.Command],
   implicit val scheduler = system.scheduler
   implicit val ec = system.executionContext
 
-  val routes: Route = pathPrefix("account") {
-    concat(
-      deposit(),
-      withdraw(),
-      balance()
-    )
+  val routes: Route = concat(
+    accounts(),
+    deposit(),
+    withdraw(),
+    balance())
+
+  // GET /accounts
+  // returns AvailableAccount(..)
+  private def accounts(): Route = path("accounts") {
+    import JsonSupport._
+    import spray.json.DefaultJsonProtocol._
+
+    get {
+      val f = group.ask[AccountGroup.Response](replyTo => RequestAccounts(replyTo)) // Ask the accountGroup actor
+
+      onSuccess(f) {
+        case AccountsList(accounts) =>
+          complete((StatusCodes.OK, accounts))
+      }
+    }
   }
 
-  // GET /account/<accountId>
+
+  // GET /account/<id>
   // returns AvailableAccount(..)
-  private def balance(): Route = path(Segment) { accountId =>
+  private def balance(): Route = path("account" / Segment) { id =>
     import JsonSupport._
 
     get {
-      val balanceFuture: Future[AccountHolder.Response] =
-        group.ask[AccountGroup.Response](replyTo => RequestAccount(accountId, replyTo)) // Ask the accountGroup actor
-            .flatMap { // and then
-              case AvailableAccount(_, account) => // If success with AvailableAccount ask the accountHolder for its balance
-                account.ask[AccountHolder.Response](replyTo => GetBalance(accountId, replyTo))
-            }
+      val f = group.ask[AccountGroup.Response](replyTo => RequestAccount(id, replyTo)) // Ask the accountGroup actor
+        .flatMap { // and then
+          case AvailableAccount(_, account) => // If success with AvailableAccount ask the accountHolder for its balance
+            account.ask[AccountHolder.Response](replyTo => GetBalance(id, replyTo))
+        }
 
-      onSuccess(balanceFuture) {
+      onSuccess(f) {
         case resp: AccountBalance =>
           complete((StatusCodes.OK, resp))
       }
@@ -70,20 +84,19 @@ class AccountApi(private val group: ActorRef[AccountGroup.Command],
 
   // POST /account/<accountId>/deposit
   // returns AvailableAccount(..)
-  private def deposit(): Route = path(Segment / "deposit") { accountId =>
+  private def deposit(): Route = path("account" / Segment / "deposit") { id =>
     import JsonSupport._
 
     post {
       entity(as[Amount]) { amount =>
         // Ask for an account AND THEN ask to deposit
-        val depositFuture: Future[AccountHolder.Response] =
-          group.ask[AccountGroup.Response](replyTo => RequestAccount(accountId, replyTo)) // Ask the accountGroup actor
-            .flatMap { // and then
-              case AvailableAccount(_, account) => // If success with AvailableAccount ask the accountHolder actor
-                account.ask[AccountHolder.Response](replyTo => Deposit(accountId, amount.amount, replyTo))
-            }
+        val f = group.ask[AccountGroup.Response](replyTo => RequestAccount(id, replyTo)) // Ask the accountGroup actor
+          .flatMap { // and then
+            case AvailableAccount(_, account) => // If success with AvailableAccount ask the accountHolder actor
+              account.ask[AccountHolder.Response](replyTo => Deposit(id, amount.amount, replyTo))
+          }
 
-        onSuccess(depositFuture) {
+        onSuccess(f) {
           case resp@AccountBalance(accountId, balance) =>
             log.info("Deposit [{}]: {} => balance {}", accountId, amount, balance)
             complete((StatusCodes.OK, resp))
@@ -94,20 +107,19 @@ class AccountApi(private val group: ActorRef[AccountGroup.Command],
 
   // POST /account/<accountId>/withdraw
   // returns AvailableAccount(..)
-  private def withdraw(): Route = path(Segment / "withdraw") { accountId =>
+  private def withdraw(): Route = path("account" / Segment / "withdraw") { id =>
     import JsonSupport._
 
     post {
       entity(as[Amount]) { amount =>
         // Ask for an account AND THEN ask to withdraw
-        val withdrawFuture: Future[AccountHolder.Response] =
-          group.ask[AccountGroup.Response](replyTo => RequestAccount(accountId, replyTo)) // Ask the accountGroup actor
-            .flatMap {
-              case AvailableAccount(_, account) => // If success with AvailableAccount ask the accountHolder actor
-                account.ask[AccountHolder.Response](replyTo => Withdraw(accountId, amount.amount, replyTo))
-            }
+        val f = group.ask[AccountGroup.Response](replyTo => RequestAccount(id, replyTo)) // Ask the accountGroup actor
+          .flatMap {
+            case AvailableAccount(_, account) => // If success with AvailableAccount ask the accountHolder actor
+              account.ask[AccountHolder.Response](replyTo => Withdraw(id, amount.amount, replyTo))
+          }
 
-        onSuccess(withdrawFuture) {
+        onSuccess(f) {
           case resp@AccountBalance(accountId, balance) =>
             log.info("Withdraw [{}]: {} => balance {}", accountId, amount, balance)
             complete((StatusCodes.OK, resp))
