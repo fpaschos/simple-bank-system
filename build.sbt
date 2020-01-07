@@ -9,13 +9,17 @@ version := "0.1"
 lazy val root = project.in(file("."))
   .aggregate(
     backend,
-    `transactions-client`
+    `transactions-client`,
+    `scala-intro`
   )
 
 lazy val backend = project
   .settings(commonSettings)
 
 lazy val `transactions-client` = project
+  .settings(commonSettings)
+
+lazy val `scala-intro` = project
   .settings(commonSettings)
 
 
