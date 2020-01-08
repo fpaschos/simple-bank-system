@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import Accounts from "./components/Accounts";
+import Dashboard from "./components/Dashboard";
 
 const App: React.FC = () => {
   return (
@@ -19,7 +19,7 @@ const App: React.FC = () => {
       {/*    Learn React*/}
       {/*  </a>*/}
       {/*</header>*/}
-      <Accounts/>
+      <Dashboard/>
     </div>
   );
 }
