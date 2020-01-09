@@ -1,23 +1,12 @@
-import {
-    XYPlot,
-    XAxis,
-    YAxis,
-    VerticalGridLines,
-    HorizontalGridLines,
-    LineMarkSeriesCanvas,
-    LineMarkSeries,
-    LineSeriesCanvas,
-    LineSeries,
-    Crosshair
-} from 'react-vis';
+import {HorizontalGridLines, LineSeries, VerticalGridLines, XAxis, XYPlot, YAxis} from 'react-vis';
 
 import 'react-vis/dist/style.css';
 
 import React, {useEffect, useRef, useState} from 'react';
-import {useWindowSize} from "../services/hooks";
+import {useWindowSize} from "../../services/hooks";
 
+// Using plain javascript for visual-vis components
 const AccountPlot = (props) => {
-
     const {data} = props;
     const [width, setWidth] = useState(0);
     const [height, setHeight] = useState(0);
@@ -28,8 +17,7 @@ const AccountPlot = (props) => {
     // responsive width and height
     useEffect(() => {
         setWidth(ref.current.clientWidth);
-        // setHeight(ref.current.clientHeight > 400 ? ref.current.clientHeight : 400);
-        setHeight(400)
+        setHeight(ref.current.clientHeight);
     }, [size]);
 
 
@@ -39,8 +27,6 @@ const AccountPlot = (props) => {
                 width={width}
                 height={height}
                 xType="time"
-                // style={{ fill: 'none'}}
-
             >
                 <VerticalGridLines/>
                 <HorizontalGridLines/>

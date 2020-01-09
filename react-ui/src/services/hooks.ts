@@ -21,6 +21,8 @@ usePrevious = (value: any) => {
 // From https://usehooks.com/useWindowSize/
 export const  useWindowSize = () => {
     const isClient = typeof window === 'object';
+    const size = getSize();
+
 
     function getSize() {
         return {
@@ -37,12 +39,12 @@ export const  useWindowSize = () => {
         }
 
         function handleResize() {
-            setWindowSize(getSize());
+            setWindowSize(size);
         }
 
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
-    }, []); // Empty array ensures that effect is only run on mount and unmount
+    }, [size,isClient]); // Empty array ensures that effect is only run on mount and unmount
 
     return windowSize;
-}
+};

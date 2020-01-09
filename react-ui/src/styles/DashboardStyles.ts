@@ -14,5 +14,6 @@ export interface BoxProps {
 
 export const Box = styled.div<BoxProps>`
   padding: ${px2vw(20)};
+  height: 50vh;
   width:  ${(props)=> props.w}%;
 `;

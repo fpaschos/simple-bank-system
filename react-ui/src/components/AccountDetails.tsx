@@ -1,7 +1,7 @@
 import React, {FunctionComponent, useEffect, useState} from 'react';
 import useAccountByIdService, {AccountBalance} from "../services/AccountByIdService";
 import {usePrevious} from "../services/hooks";
-import AccountPlot from './AccountPlot';
+import AccountPlot from './js/AccountPlot';
 
 export interface Props {
     accountId?: string;
@@ -19,7 +19,7 @@ const AccountDetails: FunctionComponent<Props> = (props: Props) => {
 
     useEffect(()  => {
         if(!prevBalance) {
-            setBalances([...balances, balance]);
+            setBalances(bs => [...bs, balance]);
             return
         }
 
@@ -28,19 +28,18 @@ const AccountDetails: FunctionComponent<Props> = (props: Props) => {
             return
         }
 
-        setBalances([...balances, balance]);
+        setBalances(bs => [...bs, balance]);
 
-    },[balance]);
+    },[prevBalance, balance]);
 
     return (
         <>
             {props.accountId && (
                 <>
-                    <p>Account: {balance.accountId}</p>
-                    <p>Balance: {balance.balance}</p>
+                    <div>Account: {balance.accountId}</div>
+                    <div>Balance: {balance.balance}</div>
 
                     {plotData && <AccountPlot data={plotData}/> }
-
                 </>
             )}
 

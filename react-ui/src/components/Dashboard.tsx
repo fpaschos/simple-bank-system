@@ -18,9 +18,6 @@ const Dashboard: FunctionComponent = () => {
             <Box w={50}>
                 <AccountDetails accountId={selected}/>
             </Box>
-            <Box w={50}>
-                TODO
-            </Box>
         </Container>
     );
 };
