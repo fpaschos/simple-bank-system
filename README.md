@@ -4,7 +4,7 @@ Implementation of a simple bank account management system using [akka.io](https:
 The purpose of this repository is to be familiarized with the new [akka-typed](https://doc.akka.io/docs/akka/current/typed/index.html) API.
 
 ### Final implementation
-[Capture](https://github.com/fpaschos/simple-bank-system/blob/react-ui/docs/images/capture-1.gif)
+![Capture](https://github.com/fpaschos/simple-bank-system/blob/react-ui/docs/images/capture-1.gif)
 
 
 ### How to read the code
