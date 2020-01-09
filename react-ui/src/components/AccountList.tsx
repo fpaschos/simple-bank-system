@@ -1,27 +1,26 @@
 import React from 'react';
 import {FunctionComponent} from 'react';
+import Select from 'react-select';
 
 export interface Props {
     accounts: string[];
     selected: string;
+
     onSelect(accountId: string): void;
 }
 
+const collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
 const AccountList: FunctionComponent<Props> = (props: Props) => {
-    const accounts = props.accounts;
+    const options = props.accounts
+        .sort(collator.compare)
+        .map(acc => ({value: acc, label: acc}));
+
     return (
         <>
-            <div>Online accounts: {accounts.length}</div>
-            <select name="select" onChange={(el) => props.onSelect(el.target.value)}>
-                <option value=''>Select an account</option>
-                {
-                    accounts
-                        .sort()
-                        .map(acc => <option value={acc} key={acc} selected={props.selected == acc}>{acc}</option>)
-                }
-            </select>
+            <div>Online accounts: {options.length}</div>
+            <Select options={options} onChange={(acc:any) => {if(acc) props.onSelect(acc.value)}}/>
         </>
     );
-}
+};
 
 export default AccountList;
