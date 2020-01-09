@@ -43,5 +43,5 @@ Implement `HttpServer` endpoints and integrate the existing account actors.
 Simulate some account operations traffic.
 Create a `transaction-client` project that uses `akka-stream` API to post continuously random requests to the backend.
 
-- [Part 3.4]() 
-Create a react-ui project to utilize the existing API
+- [Part 3.4](https://github.com/fpaschos/simple-bank-system/tree/part-3.4)
+Create a react-ui project to utilize the existing API.
