@@ -3,7 +3,7 @@ import {FunctionComponent} from 'react';
 import useAccountsService from "../services/AccountsService";
 import AccountList from "./AccountList";
 import AccountDetails from "./AccountDetails";
-import {Box, Container} from '../styles/DashboardStyles';
+import {Box, BoxContainer} from '../styles/DashboardStyles';
 
 
 const Dashboard: FunctionComponent = () => {
@@ -11,14 +11,14 @@ const Dashboard: FunctionComponent = () => {
     const [selected, setSelected] = useState('');
 
     return (
-        <Container>
+        <BoxContainer>
             <Box w={50}>
                 <AccountList accounts={accounts} selected={selected} onSelect={(accountId) =>  {setSelected(accountId)}}/>
             </Box>
             <Box w={50}>
                 <AccountDetails accountId={selected}/>
             </Box>
-        </Container>
+        </BoxContainer>
     );
 };
 

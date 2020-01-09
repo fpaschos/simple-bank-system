@@ -1,11 +1,11 @@
 import React from 'react';
 import {FunctionComponent} from 'react';
 import Select from 'react-select';
+import {selectDarkStyles, selectDarkTheme} from '../styles/DashboardStyles';
 
 export interface Props {
     accounts: string[];
     selected: string;
-
     onSelect(accountId: string): void;
 }
 
@@ -15,10 +15,16 @@ const AccountList: FunctionComponent<Props> = (props: Props) => {
         .sort(collator.compare)
         .map(acc => ({value: acc, label: acc}));
 
+
     return (
         <>
-            <div>Online accounts: {options.length}</div>
-            <Select options={options} onChange={(acc:any) => {if(acc) props.onSelect(acc.value)}}/>
+            <h3>Online accounts: {options.length}</h3>
+            <Select options={options}
+                    onChange={(acc: any) => {
+                        if (acc) props.onSelect(acc.value)
+                    }}
+                    theme={selectDarkTheme}
+                    styles={selectDarkStyles}/>
         </>
     );
 };

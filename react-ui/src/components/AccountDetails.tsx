@@ -36,8 +36,8 @@ const AccountDetails: FunctionComponent<Props> = (props: Props) => {
         <>
             {props.accountId && (
                 <>
-                    <div>Account: {balance.accountId}</div>
-                    <div>Balance: {balance.balance}</div>
+                    <h3>Account: {balance.accountId}</h3>
+                    <h4>Balance: {balance.balance} &euro;</h4>
 
                     {plotData && <AccountPlot data={plotData}/> }
                 </>

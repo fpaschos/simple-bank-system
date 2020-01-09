@@ -1,7 +1,8 @@
 import styled from 'styled-components';
 import px2vw from "./utils";
+import chroma from 'chroma-js';
 
-export const Container = styled.div`
+export const BoxContainer = styled.div`
       display: flex;
       flex-flow: row wrap;
       min-width: 100%;
@@ -17,3 +18,22 @@ export const Box = styled.div<BoxProps>`
   height: 50vh;
   width:  ${(props)=> props.w}%;
 `;
+
+export const selectDarkTheme = (theme:any) => {
+   return ({
+        ...theme,
+        colors: {
+            ...theme.colors,
+            primary: '#333',
+            primary25: chroma('#333').brighten(0.99).css(),
+        }
+    })
+};
+
+export const selectDarkStyles = {
+    menu: (provided: any, state: any) => ({
+        ...provided,
+       backgroundColor: '#111'
+    })
+}
+

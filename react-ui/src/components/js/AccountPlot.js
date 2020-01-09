@@ -1,4 +1,4 @@
-import {HorizontalGridLines, LineSeries, VerticalGridLines, XAxis, XYPlot, YAxis} from 'react-vis';
+import {LineSeries, XAxis, XYPlot, YAxis} from 'react-vis';
 
 import 'react-vis/dist/style.css';
 
@@ -28,8 +28,6 @@ const AccountPlot = (props) => {
                 height={height}
                 xType="time"
             >
-                <VerticalGridLines/>
-                <HorizontalGridLines/>
                 <XAxis/>
                 <YAxis/>
                 <LineSeries
