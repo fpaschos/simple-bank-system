@@ -3,6 +3,10 @@ Implementation of a simple bank account management system using [akka.io](https:
 
 The purpose of this repository is to be familiarized with the new [akka-typed](https://doc.akka.io/docs/akka/current/typed/index.html) API.
 
+### Final implementation
+[Capture]()
+
+
 ### How to read the code
 The code is split and organized in several **tags** in order to reflect 
 the progression of the implementation.
@@ -39,3 +43,5 @@ Implement `HttpServer` endpoints and integrate the existing account actors.
 Simulate some account operations traffic.
 Create a `transaction-client` project that uses `akka-stream` API to post continuously random requests to the backend.
 
+- [Part 3.4]() 
+Create a react-ui project to utilize the existing API
