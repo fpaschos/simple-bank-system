@@ -6,6 +6,22 @@ The purpose of this repository is to be familiarized with the new [akka-typed](h
 ### Final implementation
 ![Capture](https://github.com/fpaschos/simple-bank-system/blob/react-ui/docs/images/capture-1.gif)
 
+### How to run the code locally
+You should checkout to the lastest **master** branch.
+From the project root directory
+
+- Start the backend server (akka)
+```sbt backend/run```
+
+- Start the transaction-client to generate random traffic
+```sbt transactions-cliens/run```
+
+- Start the react ui client
+```
+cd react-ui
+npm start
+```
+
 
 ### How to read the code
 The code is split and organized in several **tags** in order to reflect 
