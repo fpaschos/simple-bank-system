@@ -9,7 +9,7 @@ export interface Props {
 
 
 const AccountDetails: FunctionComponent<Props> = (props: Props) => {
-    const balance = useAccountByIdService(props.accountId, 2000);
+    const balance = useAccountByIdService(props.accountId, 1000);
 
     const prevBalance = usePrevious(balance) as AccountBalance;
 
