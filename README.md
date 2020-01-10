@@ -68,12 +68,12 @@ Of course this project is heavily influenced and inspired by the work of others.
 Practically everything is available here.
 
 - [Akka IoT example](https://doc.akka.io/docs/akka/current/typed/guide/tutorial.html)
- An excellent starting point. The similarities to the project structure are obvious.
+ An excellent starting point. The similarities with the project structure are obvious.
  
 - [Tour of Akka Typed](https://manuel.bernhardt.io/articles/)
 An in depth guide and example of akka-typed features. (see also the other blog articles)
 
-- [Colin Breck](https://blog.colinbreck.com/)
+- [Colin Breck Blog](https://blog.colinbreck.com/)
 IMHO the best resource about actors - akka streams integration and articles about practical realtime scaling architecture topics.
 
 - [SoftwareMill Blog](https://blog.softwaremill.com/)
