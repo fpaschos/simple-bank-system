@@ -26,53 +26,60 @@ object AccountHolder {
   // Respond with the current balance of an account
   final case class AccountBalance(accountId: String, balance: Double) extends Response
 
-  /**
-   * Actor builder method
-   *
-   * @param accountId the id of the account
-   */
-  def apply(accountId: String) : Behavior[Command] = Behaviors.setup(context => new AccountHolder(context, accountId))
+  final case class  InsufficientFunds(accountId: String) extends Response
 
-}
 
-/**
- * Implementation of an actor that holds bank account state.
- * There is ONE ACTOR PER ACCOUNT discriminated by a specific accountId.
- *
- * This is an example of actor class implementation.
- *
- * @param context the actor context
- * @param accountId the id of the account (internal actor state)
- */
-class AccountHolder(context: ActorContext[Command],
-                    private val accountId: String) extends AbstractBehavior[Command](context) {
+  // State
+  final case class Account(accountId: String, balance: Double) {
+
+    def update(cmd: Deposit): Account =
+      copy(balance = balance + cmd.amount)
+
+
+    def update(cmd: Withdraw): Account =
+      copy(balance = balance - cmd.amount)
+
+    def canWithdraw(amount: Double): Boolean = balance >= amount
+  }
 
   /**
-   * The current account balance initialized with zero value (account is empty)
+   * Implementation of an actor that holds bank account state.
+   * There is ONE ACTOR PER ACCOUNT discriminated by a specific accountId.
    *
-   * This is internal actor state.
+   * This is an example of functional actor implementation
+   *
+   * @param accountId the id of the account (internal actor state)
    */
-  private var balance = 0.0
+  def apply(accountId: String): Behavior[Command] = Behaviors.setup(ctx => {
+    // Define the initial state
+    val initial = Account(accountId, 0.0)
+    ctx.log.info("AccountHolder {} STARTED BALANCE {}", initial.accountId, initial.balance)
+    running(initial)
+  })
 
-  context.log.info("AccountHolder {} STARTED BALANCE {}", accountId, balance)
-
-
-  // Handle message commands
-  // This is essentially a switch
-  override def onMessage(msg: Command): Behavior[Command] =
-    msg match {
+  // Define the single running state of the account
+  private def running(acc: Account): Behavior[Command] =
+    Behaviors.receiveMessage[Command] {
       case cmd: Deposit =>
-        balance += cmd.amount  // Change state
-        cmd.replyTo ! AccountBalance(accountId, balance) // Respond with the current balance
-        Behaviors.same          // Return the same behavior
+        val newAcc = acc.update(cmd)
+        cmd.replyTo ! AccountBalance(acc.accountId, newAcc.balance)
+        running(newAcc) // Respond with the current balance
 
       case cmd: Withdraw =>
-        balance -= cmd.amount  // Change state
-        cmd.replyTo ! AccountBalance(accountId, balance) // Respond with the current balance
-        Behaviors.same          // Return the same behavior
+        if(acc.canWithdraw(cmd.amount)) {
+          val newAcc = acc.update(cmd)
+          cmd.replyTo ! AccountBalance(acc.accountId, newAcc.balance)
+          running(newAcc) // Respond with the current balance
+
+        } else {
+          cmd.replyTo ! InsufficientFunds(acc.accountId) // Respond with the current balance
+          running(acc) // Respond with the current balance
+        }
+
 
       case cmd: GetBalance =>
-        cmd.replyTo ! AccountBalance(accountId, balance) // Respond to the "replyTo" actor with the current balance
-        Behaviors.same          // Return the same behavior
+        cmd.replyTo ! AccountBalance(acc.accountId, acc.balance) // Respond to the "replyTo" actor with the current balance
+        running(acc)
     }
 }
+

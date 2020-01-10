@@ -8,7 +8,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
 import gr.fpas.bank.be.AccountGroup.{AccountsList, AvailableAccount, RequestAccount, RequestAccounts}
-import gr.fpas.bank.be.AccountHolder.{AccountBalance, Deposit, GetBalance, Withdraw}
+import gr.fpas.bank.be.AccountHolder.{AccountBalance, Deposit, GetBalance, InsufficientFunds, Withdraw}
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -78,6 +78,8 @@ class AccountApi(private val group: ActorRef[AccountGroup.Command],
       onSuccess(f) {
         case resp: AccountBalance =>
           complete((StatusCodes.OK, resp))
+        case _ =>
+          complete(StatusCodes.BadRequest)
       }
     }
   }
@@ -100,6 +102,8 @@ class AccountApi(private val group: ActorRef[AccountGroup.Command],
           case resp@AccountBalance(accountId, balance) =>
             log.info("Deposit [{}]: {} => balance {}", accountId, amount, balance)
             complete((StatusCodes.OK, resp))
+          case _ =>
+            complete(StatusCodes.BadRequest)
         }
       }
     }
@@ -123,6 +127,9 @@ class AccountApi(private val group: ActorRef[AccountGroup.Command],
           case resp@AccountBalance(accountId, balance) =>
             log.info("Withdraw [{}]: {} => balance {}", accountId, amount, balance)
             complete((StatusCodes.OK, resp))
+          case InsufficientFunds(accountId) =>
+            log.error("Withdraw [{}]:  Insufficient funds", accountId)
+            complete(StatusCodes.BadRequest)
         }
       }
     }
