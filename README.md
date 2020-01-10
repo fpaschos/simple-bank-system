@@ -1,5 +1,5 @@
-### Simple Bank Accounts System
-Implementation of a simple bank account management system using [akka.io](https://akka.io/docs/).
+### Simple Bank Accounting System
+Implementation of a simple bank accounting system using [akka.io](https://akka.io/docs/).
 
 The purpose of this repository is to be familiarized with the new [akka-typed](https://doc.akka.io/docs/akka/current/typed/index.html) API.
 
