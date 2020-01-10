@@ -1,12 +1,12 @@
-### Simple Bank Accounting System
+### [Simple Bank Accounting System](#readme)
 Implementation of a simple bank accounting system using [akka.io](https://akka.io/docs/).
 
 The purpose of this repository is to be familiarized with the new [akka-typed](https://doc.akka.io/docs/akka/current/typed/index.html) API.
 
-### Final implementation
+### [Final implementation](#final-implementation)
 ![Capture](https://github.com/fpaschos/simple-bank-system/blob/master/docs/images/capture-1.gif)
 
-### How to run the code locally
+### [How to run the code locally](#run-locally)
 You should checkout to the lastest **master** branch.
 From the project root directory
 
@@ -22,14 +22,14 @@ cd react-ui
 npm start
 ```
 
-### How to read the code
+### [How to read the code](#how-to-read-code)
 The code is split and organized in several **tags** in order to reflect 
 the progression of the implementation.
 The domain is intentionally left extremely simple in order to display as many akka features as possible.
 
 The implementation progress is as following: 
 
-##### Part 1 - A simple actor with tests
+##### Section 1 - A simple actor with tests
 - [Part 1.1](https://github.com/fpaschos/simple-bank-system/tree/part-1.1) 
 Create a simple `AccountHolder` actor.
 
@@ -39,14 +39,14 @@ Use akka ask pattern to interact with the `AccountHolder` from outside the syste
 - [Part 1.3](https://github.com/fpaschos/simple-bank-system/tree/part-1.3) 
 Create `AccountHolderSpec` tests.
 
-##### Part 2 - Create a supervisor cache group actor
+##### Section 2 - Create a supervisor cache group actor
 - [Part 2.1](https://github.com/fpaschos/simple-bank-system/tree/part-2.1)
 Create an `AccountGroup` in memory cache and supervisor actor.
  
 - [Part 2.2](https://github.com/fpaschos/simple-bank-system/tree/part-2.2)
 Create `AccountGroupSpec` tests.
 
-##### Part 3 - Implement an REST API using `akka-http`
+##### Section 3 - Implement an REST API using `akka-http`
 - [Part 3.1](https://github.com/fpaschos/simple-bank-system/tree/part-3.1)
 Create an application `MainSupervisor` actor.
 Create an `HttpServer` server actor with account endpoints.
@@ -61,7 +61,7 @@ Create a `transaction-client` project that uses `akka-stream` API to post contin
 - [Part 3.4](https://github.com/fpaschos/simple-bank-system/tree/part-3.4)
 Create a react-ui project to utilize the existing API.
 
-### Resources
+### [Resources](#resources)
 Of course this project is heavily influenced and inspired by the work of others.
 
 - [Akka documentation](https://doc.akka.io/docs/akka/current/index.html) 
