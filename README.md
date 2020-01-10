@@ -60,3 +60,26 @@ Create a `transaction-client` project that uses `akka-stream` API to post contin
 
 - [Part 3.4](https://github.com/fpaschos/simple-bank-system/tree/part-3.4)
 Create a react-ui project to utilize the existing API.
+
+### Resources
+Of course this project is heavily influenced and inspired by the work of others.
+
+- [Akka documentation](https://doc.akka.io/docs/akka/current/index.html) 
+Practically everything is available here.
+
+- [Akka IoT example](https://doc.akka.io/docs/akka/current/typed/guide/tutorial.html)
+ An excellent starting point. The similarities with the project structure are obvious.
+ 
+- [Tour of Akka Typed](https://manuel.bernhardt.io/articles/)
+An in depth guide and example of akka-typed features. (see also the other blog articles)
+
+- [Colin Breck Blog](https://blog.colinbreck.com/)
+IMHO the best resource about actors - akka streams integration and articles about practical realtime scaling architecture topics.
+
+- [SoftwareMill Blog](https://blog.softwaremill.com/)
+Another great place of scala related material.
+
+- [Scala Times](https://scalatimes.com/) 
+The feed of the average scala developer.
+
+Also, if you follow the code in various places you will find comments with more noteworthy references.
