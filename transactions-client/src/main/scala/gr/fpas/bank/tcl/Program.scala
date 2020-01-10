@@ -1,6 +1,6 @@
 package gr.fpas.bank.tcl
 
-import akka.stream.Materializer
+import akka.stream.{ActorAttributes, Materializer, Supervision}
 import akka.stream.scaladsl.{Sink, Source}
 import gr.fpas.bank.tcl.HttpClient.{mkRandomCommands, postCommand}
 import akka.{Done, actor => classic}
@@ -17,13 +17,19 @@ object Program extends App {
   implicit val ec = system.dispatcher
   implicit lazy val mat = Materializer(system)
 
+  val decider: Supervision.Decider = {
+    case _: ServiceBadRequestException => Supervision.Resume
+    case _ => Supervision.Stop
+  }
+
   val stream = Source.tick(0.second, 2.seconds, ()) // Every 2 seconds
-    .mapConcat {    // Generate random account commands (Deposit or Withdraw)
+    .mapConcat { // Generate random account commands (Deposit or Withdraw)
       _ => mkRandomCommands(1000, 500)
     }
-    .mapAsync(parallelism = 30) { cmd =>  // For each command send a POST request with max 30 parallel
+    .mapAsync(parallelism = 30) { cmd => // For each command send a POST request with max 30 parallel
       postCommand(cmd)
     }
+    .withAttributes(ActorAttributes.supervisionStrategy(decider))
     .runWith(Sink.ignore)
 
 

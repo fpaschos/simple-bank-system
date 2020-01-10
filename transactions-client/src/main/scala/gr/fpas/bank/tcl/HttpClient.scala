@@ -19,6 +19,7 @@ final case class Withdraw(accountId: String, amount: Double) extends ClientComma
 
 // Some exceptions
 final case class ServiceUnexpectedException(status: StatusCode) extends RuntimeException(s"Response status = $status")
+final case class ServiceBadRequestException() extends RuntimeException(s"Response status = 400")
 
 /**
  * An HttpClient using akka streams to post random ClientCommand(s) to our backend each 2 seconds
@@ -69,6 +70,8 @@ object HttpClient {
       .map {
         case HttpResponse(StatusCodes.OK, _, _, _) =>
           Done
+        case HttpResponse(StatusCodes.BadRequest, _, _, _) =>
+          throw ServiceBadRequestException()
         case HttpResponse(status, _, _, _) =>
           throw ServiceUnexpectedException(status)
       }
