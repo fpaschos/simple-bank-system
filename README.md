@@ -1,12 +1,12 @@
-### Simple Bank Accounting System
+### [Simple Bank Accounting System](#readme)
 Implementation of a simple bank accounting system using [akka.io](https://akka.io/docs/).
 
 The purpose of this repository is to be familiarized with the new [akka-typed](https://doc.akka.io/docs/akka/current/typed/index.html) API.
 
-### Final implementation
+### [Final implementation](#final-implementation)
 ![Capture](https://github.com/fpaschos/simple-bank-system/blob/master/docs/images/capture-1.gif)
 
-### How to run the code locally
+### [How to run the code locally](#run-locally)
 You should checkout to the lastest **master** branch.
 From the project root directory
 
@@ -22,7 +22,7 @@ cd react-ui
 npm start
 ```
 
-### How to read the code
+### [How to read the code](#how-to-read-code)
 The code is split and organized in several **tags** in order to reflect 
 the progression of the implementation.
 The domain is intentionally left extremely simple in order to display as many akka features as possible.
@@ -61,7 +61,7 @@ Create a `transaction-client` project that uses `akka-stream` API to post contin
 - [Part 3.4](https://github.com/fpaschos/simple-bank-system/tree/part-3.4)
 Create a react-ui project to utilize the existing API.
 
-### [Resources](#-resources)
+### [Resources](#resources)
 Of course this project is heavily influenced and inspired by the work of others.
 
 - [Akka documentation](https://doc.akka.io/docs/akka/current/index.html) 
