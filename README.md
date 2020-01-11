@@ -1,6 +1,8 @@
 ### [Simple Bank Accounting System](#readme)
 Implementation of a simple bank accounting system using [akka.io](https://akka.io/docs/).
 
+Some articles hopefully will be produced by this code base explaining the whole route of thoughts...
+
 The purpose of this repository is to be familiarized with the new [akka-typed](https://doc.akka.io/docs/akka/current/typed/index.html) API.
 
 ### [Final implementation](#final-implementation)
