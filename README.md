@@ -82,4 +82,4 @@ Another great place of scala related material.
 - [Scala Times](https://scalatimes.com/) 
 The feed of the average scala developer.
 
-Also, if you follow the code in various places you will find comments with more noteworthy references.
+Also, if you follow the code in various places you will find comments with more references.
