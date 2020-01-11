@@ -76,7 +76,7 @@ object AccountHolder {
           running(acc) // Respond with the current balance
         }
 
-``      case cmd: GetBalance =>
+      case cmd: GetBalance =>
         cmd.replyTo ! AccountBalance(acc.accountId, acc.balance) // Respond to the "replyTo" actor with the current balance
         running(acc)
     }

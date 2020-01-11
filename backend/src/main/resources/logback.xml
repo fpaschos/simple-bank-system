@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true">
+    <!--Default Console Appender: DO NOT DELETE! Disable from application properties, set 'logging.console.default.active' to false-->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <charset>UTF-8</charset>
+            <pattern>%4relative %green(%d) %X{identity} %highlight(${LOG_LEVEL_PATTERN:-%5p}) [%X{sourceThread}] %cyan(%logger{35}) %magenta(%X{akkaSource}) - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>8192</queueSize>
+        <neverBlock>true</neverBlock>
+        <appender-ref ref="STDOUT" />
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="ASYNC"/>
+    </root>
+</configuration>
