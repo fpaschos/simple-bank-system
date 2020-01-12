@@ -71,12 +71,14 @@ Create a `transaction-client` project that uses `akka-stream` API to post contin
 - [Part 3.4](https://github.com/fpaschos/simple-bank-system/tree/part-3.4)
 Create a react-ui project to utilize the existing API.
 
-- [Part 3.5](#)
+- [Part 3.5](https://github.com/fpaschos/simple-bank-system/tree/part-3.5)
 Change the logic of **AccountHolder** to accept only withdraws that 'fit' to the current balance.
 
 #### Persistence and Event Sourcing
 
 ##### Section 4 - Event Sourcing using JDBC
+- [Part 4.1](/#)
+Making the **AccountHolder** a persisted actor.
 
 
 

@@ -1,5 +1,7 @@
 package gr.fpas.bank.be
 
+import java.time.ZonedDateTime
+
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.{AbstractBehavior, ActorContext, Behaviors}
 import gr.fpas.bank.be.AccountHolder.{AccountBalance, Command, Deposit, GetBalance, Withdraw}
@@ -29,6 +31,13 @@ object AccountHolder {
   final case class  InsufficientFunds(accountId: String) extends Response
 
 
+  // The persisted events stored in the event sourcing store
+  sealed trait Event extends CborSerialized
+
+  final case class Deposited(amount: Double, at: ZonedDateTime) extends Event
+  final case class Withdrawed(amount: Double, at: ZonedDateTime) extends Event
+
+
   // State
   final case class Account(accountId: String, balance: Double) {
 
@@ -55,6 +64,9 @@ object AccountHolder {
     val initial = Account(accountId, 0.0)
     ctx.log.info("AccountHolder {} STARTED BALANCE {}", initial.accountId, initial.balance)
     running(initial)
+
+
+
   })
 
   // Define the single running state of the account
