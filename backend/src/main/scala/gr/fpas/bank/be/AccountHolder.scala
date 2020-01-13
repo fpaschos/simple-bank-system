@@ -4,6 +4,8 @@ import java.time.ZonedDateTime
 
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.{AbstractBehavior, ActorContext, Behaviors}
+import akka.persistence.typed.PersistenceId
+import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior}
 import gr.fpas.bank.be.AccountHolder.{AccountBalance, Command, Deposit, GetBalance, Withdraw}
 
 object AccountHolder {
@@ -34,22 +36,85 @@ object AccountHolder {
   // The persisted events stored in the event sourcing store
   sealed trait Event extends CborSerialized
 
-  final case class Deposited(amount: Double, at: ZonedDateTime) extends Event
-  final case class Withdrawed(amount: Double, at: ZonedDateTime) extends Event
+  final case class Deposited(amount: Double, created: ZonedDateTime) extends Event
+  final case class Withdrawed(amount: Double, created: ZonedDateTime) extends Event
+
+
 
 
   // State
-  final case class Account(accountId: String, balance: Double) {
 
-    def update(cmd: Deposit): Account =
-      copy(balance = balance + cmd.amount)
+  sealed trait Account {
+    val balance: Double
 
+    def commandHandler(cmd: Command): Effect[Event, Account]
 
-    def update(cmd: Withdraw): Account =
-      copy(balance = balance - cmd.amount)
-
-    def canWithdraw(amount: Double): Boolean = balance >= amount
+    def eventHandler(evt: Event): Account
   }
+
+  final case class EmptyAccount(accountId: String) extends Account {
+    override val balance: Double = 0.0
+
+    override def commandHandler(cmd: Command): Effect[Event, Account] = cmd match {
+      case Deposit(accountId, amount, replyTo) =>
+        Effect.persist(Deposited(amount, ZonedDateTime.now()))
+          .thenReply(replyTo){ st =>  AccountBalance(accountId, st.balance)}
+
+      case Withdraw(accountId, _, replyTo) =>
+        Effect.none
+          .thenReply(replyTo){ _=>  InsufficientFunds(accountId)}
+
+      case GetBalance(accountId, replyTo) =>
+        Effect.none
+          .thenReply(replyTo){st => AccountBalance(accountId, st.balance)}
+    }
+
+    override def eventHandler(evt: Event): Account = evt match {
+      case Deposited(amount, created) => ActiveAccount(accountId, amount, created)
+      case _ => this
+    }
+  }
+
+  final case class ActiveAccount(accountId: String, balance: Double, updated: ZonedDateTime) extends Account {
+
+    private def update(evt: Deposited): ActiveAccount =
+      copy(balance = balance + evt.amount, updated = evt.created)
+
+
+    private def update(evt: Withdrawed): ActiveAccount =
+      copy(balance = balance - evt.amount, updated = evt.created)
+
+    private def canWithdraw(amount: Double): Boolean = balance >= amount
+
+
+    override def commandHandler(cmd: Command): Effect[Event, Account] = cmd match {
+      case Deposit(accountId, amount, replyTo) =>
+        Effect.persist(Deposited(amount, ZonedDateTime.now()))
+          .thenReply(replyTo){ st =>  AccountBalance(accountId, st.balance)}
+
+      case Withdraw(accountId, amount, replyTo) =>
+
+        if(canWithdraw(amount)) {
+          Effect.persist(Withdrawed(amount, ZonedDateTime.now()))
+            .thenReply(replyTo){ st =>  AccountBalance(accountId, st.balance)}
+        } else {
+          Effect.none
+            .thenReply(replyTo){ _=>  InsufficientFunds(accountId)}
+        }
+
+      case GetBalance(accountId, replyTo) =>
+        Effect.none
+          .thenReply(replyTo){st => AccountBalance(accountId, st.balance)}
+    }
+
+    override def eventHandler(evt: Event): Account = evt match {
+      case wd:Withdrawed => update(wd)
+      case dp:Deposited => update(dp)
+    }
+  }
+
+
+
 
   /**
    * Implementation of an actor that holds bank account state.
@@ -61,36 +126,43 @@ object AccountHolder {
    */
   def apply(accountId: String): Behavior[Command] = Behaviors.setup(ctx => {
     // Define the initial state
-    val initial = Account(accountId, 0.0)
-    ctx.log.info("AccountHolder {} STARTED BALANCE {}", initial.accountId, initial.balance)
-    running(initial)
+    val initial = EmptyAccount(accountId)
+    ctx.log.info("AccountHolder {} STARTING BALANCE 0.0", initial.balance)
 
 
+    EventSourcedBehavior[Command, Event, Account](
+      persistenceId = PersistenceId.ofUniqueId(accountId),
+      emptyState = initial,
+      commandHandler = (state, cmd) => state.commandHandler(cmd),
+      eventHandler = (state, evt) => state.eventHandler(evt)
+    )
 
   })
 
+
+
   // Define the single running state of the account
-  private def running(acc: Account): Behavior[Command] =
-    Behaviors.receiveMessage[Command] {
-      case cmd: Deposit =>
-        val newAcc = acc.update(cmd)
-        cmd.replyTo ! AccountBalance(acc.accountId, newAcc.balance)
-        running(newAcc) // Respond with the current balance
-
-      case cmd: Withdraw =>
-        if(acc.canWithdraw(cmd.amount)) {
-          val newAcc = acc.update(cmd)
-          cmd.replyTo ! AccountBalance(acc.accountId, newAcc.balance)
-          running(newAcc) // Respond with the current balance
-
-        } else {
-          cmd.replyTo ! InsufficientFunds(acc.accountId) // Respond with the current balance
-          running(acc) // Respond with the current balance
-        }
-
-      case cmd: GetBalance =>
-        cmd.replyTo ! AccountBalance(acc.accountId, acc.balance) // Respond to the "replyTo" actor with the current balance
-        running(acc)
-    }
+  private def running(acc: Account): Behavior[Command] = ???
+//    Behaviors.receiveMessage[Command] {
+//      case cmd: Deposit =>
+//        val newAcc = acc.update(cmd)
+//        cmd.replyTo ! AccountBalance(acc.accountId, newAcc.balance)
+//        running(newAcc) // Respond with the current balance
+//
+//      case cmd: Withdraw =>
+//        if(acc.canWithdraw(cmd.amount)) {
+//          val newAcc = acc.update(cmd)
+//          cmd.replyTo ! AccountBalance(acc.accountId, newAcc.balance)
+//          running(newAcc) // Respond with the current balance
+//
+//        } else {
+//          cmd.replyTo ! InsufficientFunds(acc.accountId) // Respond with the current balance
+//          running(acc) // Respond with the current balance
+//        }
+//
+//      case cmd: GetBalance =>
+//        cmd.replyTo ! AccountBalance(acc.accountId, acc.balance) // Respond to the "replyTo" actor with the current balance
+//        running(acc)
+//    }
 }
 

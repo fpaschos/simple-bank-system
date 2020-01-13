@@ -2,7 +2,7 @@ version: '3.2'
 services:
   postgres:
     image: postgres:latest
-    container_name: postgres
+    container_name: bank-postgres
 
     # credentials (docker:docker)
     environment:
