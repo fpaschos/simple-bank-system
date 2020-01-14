@@ -1,0 +1,19 @@
+version: '3.2'
+services:
+  postgres:
+    image: postgres:latest
+    container_name: bank-postgres
+
+    # credentials (docker:docker)
+    environment:
+      - "POSTGRES_USER=docker"
+      - "POSTGRES_PASSWORD=docker"
+    ports:
+      - "54321:5432"
+    volumes:
+      - "./initdb:/docker-entrypoint-initdb.d"
+    networks:
+      - banknet
+
+networks:
+  banknet:

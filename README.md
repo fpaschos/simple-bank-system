@@ -12,6 +12,13 @@ The purpose of this repository is to be familiarized with the new [akka-typed](h
 You should checkout to the lastest **master** branch.
 From the project root directory
 
+- For persistence to work (after part-4 ...)
+```
+cd deploy/local
+docker-compose up
+cd ../..
+```
+
 - Start the backend server (akka)
 ```sbt backend/run```
 
@@ -30,6 +37,7 @@ the progression of the implementation.
 The domain is intentionally left extremely simple in order to display as many akka features as possible.
 
 The implementation progress is as following: 
+#### In memory implementation 
 
 ##### Section 1 - A simple actor with tests
 - [Part 1.1](https://github.com/fpaschos/simple-bank-system/tree/part-1.1) 
@@ -62,6 +70,18 @@ Create a `transaction-client` project that uses `akka-stream` API to post contin
 
 - [Part 3.4](https://github.com/fpaschos/simple-bank-system/tree/part-3.4)
 Create a react-ui project to utilize the existing API.
+
+- [Part 3.5](https://github.com/fpaschos/simple-bank-system/tree/part-3.5)
+Change the logic of **AccountHolder** to accept only withdraws that 'fit' to the current balance.
+
+#### Persistence and Event Sourcing
+From now on a database is required see [above](https://github.com/fpaschos/simple-bank-system/#run-locally)
+
+##### Section 4 - Event Sourcing using JDBC
+- [Part 4.1](https://github.com/fpaschos/simple-bank-system/tree/part-4.1)
+Set up docker and postgresql.
+Add persistence jdbc dependencies and configuration.
+Make the **AccountHolder** a persisted actor.
 
 ### [Resources](#resources)
 Of course this project is heavily influenced and inspired by the work of others.

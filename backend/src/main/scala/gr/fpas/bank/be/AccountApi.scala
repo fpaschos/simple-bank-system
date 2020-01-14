@@ -33,7 +33,6 @@ object AccountApi {
 class AccountApi(private val group: ActorRef[AccountGroup.Command],
                  private val system: ActorSystem[_]) {
 
-  lazy val log = system.log
 
   // Needed for ask pattern and Futures
   implicit val timeout = Timeout(5.seconds) // usually we'd obtain the timeout from the system's configuration
@@ -91,19 +90,22 @@ class AccountApi(private val group: ActorRef[AccountGroup.Command],
 
     post {
       entity(as[Amount]) { amount =>
-        // Ask for an account AND THEN ask to deposit
-        val f = group.ask[AccountGroup.Response](replyTo => RequestAccount(id, replyTo)) // Ask the accountGroup actor
-          .flatMap { // and then
-            case AvailableAccount(_, account) => // If success with AvailableAccount ask the accountHolder actor
-              account.ask[AccountHolder.Response](replyTo => Deposit(id, amount.amount, replyTo))
-          }
+        extractLog { log =>
 
-        onSuccess(f) {
-          case resp@AccountBalance(accountId, balance) =>
-            log.info("Deposit [{}]: {} => balance {}", accountId, amount, balance)
-            complete((StatusCodes.OK, resp))
-          case _ =>
-            complete(StatusCodes.BadRequest)
+          // Ask for an account AND THEN ask to deposit
+          val f = group.ask[AccountGroup.Response](replyTo => RequestAccount(id, replyTo)) // Ask the accountGroup actor
+            .flatMap { // and then
+              case AvailableAccount(_, account) => // If success with AvailableAccount ask the accountHolder actor
+                account.ask[AccountHolder.Response](replyTo => Deposit(id, amount.amount, replyTo))
+            }
+
+          onSuccess(f) {
+            case resp@AccountBalance(accountId, balance) =>
+              log.info("Deposit [{}]: {} => balance {}", accountId, amount, balance)
+              complete((StatusCodes.OK, resp))
+            case _ =>
+              complete(StatusCodes.BadRequest)
+          }
         }
       }
     }
@@ -116,20 +118,22 @@ class AccountApi(private val group: ActorRef[AccountGroup.Command],
 
     post {
       entity(as[Amount]) { amount =>
-        // Ask for an account AND THEN ask to withdraw
-        val f = group.ask[AccountGroup.Response](replyTo => RequestAccount(id, replyTo)) // Ask the accountGroup actor
-          .flatMap {
-            case AvailableAccount(_, account) => // If success with AvailableAccount ask the accountHolder actor
-              account.ask[AccountHolder.Response](replyTo => Withdraw(id, amount.amount, replyTo))
-          }
+        extractLog { log =>
+          // Ask for an account AND THEN ask to withdraw
+          val f = group.ask[AccountGroup.Response](replyTo => RequestAccount(id, replyTo)) // Ask the accountGroup actor
+            .flatMap {
+              case AvailableAccount(_, account) => // If success with AvailableAccount ask the accountHolder actor
+                account.ask[AccountHolder.Response](replyTo => Withdraw(id, amount.amount, replyTo))
+            }
 
-        onSuccess(f) {
-          case resp@AccountBalance(accountId, balance) =>
-            log.info("Withdraw [{}]: {} => balance {}", accountId, amount, balance)
-            complete((StatusCodes.OK, resp))
-          case InsufficientFunds(accountId) =>
-            log.error("Withdraw [{}]:  Insufficient funds", accountId)
-            complete(StatusCodes.BadRequest)
+          onSuccess(f) {
+            case resp@AccountBalance(accountId, balance) =>
+              log.info("Withdraw [{}]: {} => balance {}", accountId, amount, balance)
+              complete((StatusCodes.OK, resp))
+            case InsufficientFunds(accountId) =>
+              log.error("Withdraw [{}]:  Insufficient funds", accountId)
+              complete(StatusCodes.BadRequest)
+          }
         }
       }
     }

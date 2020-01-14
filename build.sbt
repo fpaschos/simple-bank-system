@@ -39,6 +39,13 @@ lazy val dependencies = Seq(
   "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
   "com.typesafe.akka" %% "akka-cluster-typed" % akkaVersion,
   "com.typesafe.akka" %% "akka-serialization-jackson"  % akkaVersion,
+  "com.typesafe.akka" %% "akka-persistence-typed" % akkaVersion,
+  "com.typesafe.akka" %% "akka-persistence-query" % akkaVersion,
+
+
+  // Persistence
+  "com.github.dnvriend" %% "akka-persistence-jdbc" % "3.5.2",
+  "org.postgresql" % "postgresql" % "42.2.9",
 
 
   "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
