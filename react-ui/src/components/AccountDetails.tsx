@@ -15,7 +15,7 @@ const AccountDetails: FunctionComponent<Props> = (props: Props) => {
 
     const [balances, setBalances] = useState<AccountBalance[]>([]);
 
-    const plotData = balances.map(b => ({y: b.balance, x: b.at}));
+    const series = balances.map(b => ({y: b.balance, x: b.updated}));
 
     useEffect(()  => {
         if(!prevBalance) {
@@ -39,7 +39,7 @@ const AccountDetails: FunctionComponent<Props> = (props: Props) => {
                     <h3>Account: {balance.accountId}</h3>
                     <h4>Balance: {balance.balance} &euro;</h4>
 
-                    {plotData && <AccountPlot data={plotData}/> }
+                    {series.length > 0  && <AccountPlot series={series}/> }
                 </>
             )}
 

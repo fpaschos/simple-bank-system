@@ -27,7 +27,7 @@ object AccountHolder {
   sealed trait Response
 
   // Respond with the current balance of an account
-  final case class AccountBalance(accountId: String, balance: Double) extends Response
+  final case class AccountBalance(accountId: String, balance: Double, updated: ZonedDateTime) extends Response
 
   final case class InsufficientFunds(accountId: String) extends Response
 
@@ -44,6 +44,7 @@ object AccountHolder {
 
   sealed trait Account {
     val balance: Double
+    val updated: ZonedDateTime // Last update time
 
     def commandHandler(cmd: Command): Effect[Event, Account]
 
@@ -52,11 +53,12 @@ object AccountHolder {
 
   final case class EmptyAccount(accountId: String) extends Account {
     override val balance: Double = 0.0
+    override val updated: ZonedDateTime = ZonedDateTime.now()
 
     override def commandHandler(cmd: Command): Effect[Event, Account] = cmd match {
       case Deposit(accountId, amount, replyTo) =>
         Effect.persist(Deposited(amount, ZonedDateTime.now()))
-          .thenReply(replyTo) { st => AccountBalance(accountId, st.balance) }
+          .thenReply(replyTo) { st => AccountBalance(accountId, st.balance, updated = st.updated) }
 
       case Withdraw(accountId, _, replyTo) =>
         Effect.none
@@ -64,7 +66,7 @@ object AccountHolder {
 
       case GetBalance(accountId, replyTo) =>
         Effect.none
-          .thenReply(replyTo) { st => AccountBalance(accountId, st.balance) }
+          .thenReply(replyTo) { st => AccountBalance(accountId, st.balance, updated = st.updated) }
     }
 
     override def eventHandler(evt: Event): Account = evt match {
@@ -88,13 +90,13 @@ object AccountHolder {
     override def commandHandler(cmd: Command): Effect[Event, Account] = cmd match {
       case Deposit(accountId, amount, replyTo) =>
         Effect.persist(Deposited(amount, ZonedDateTime.now()))
-          .thenReply(replyTo) { st => AccountBalance(accountId, st.balance) }
+          .thenReply(replyTo) { st => AccountBalance(accountId, st.balance, st.updated) }
 
       case Withdraw(accountId, amount, replyTo) =>
 
         if (canWithdraw(amount)) {
           Effect.persist(Withdrawed(amount, ZonedDateTime.now()))
-            .thenReply(replyTo) { st => AccountBalance(accountId, st.balance) }
+            .thenReply(replyTo) { st => AccountBalance(accountId, st.balance, st.updated) }
         } else {
           Effect.none
             .thenReply(replyTo) { _ => InsufficientFunds(accountId) }
@@ -102,7 +104,7 @@ object AccountHolder {
 
       case GetBalance(accountId, replyTo) =>
         Effect.none
-          .thenReply(replyTo) { st => AccountBalance(accountId, st.balance) }
+          .thenReply(replyTo) { st => AccountBalance(accountId, st.balance, st.updated) }
     }
 
     override def eventHandler(evt: Event): Account = evt match {

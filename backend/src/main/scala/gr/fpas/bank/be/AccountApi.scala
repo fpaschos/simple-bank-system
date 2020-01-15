@@ -17,14 +17,7 @@ import scala.concurrent.duration._
 final case class Amount(amount: Double) // {"amount": 23.2}
 
 // Some json serialization configuration
-object JsonSupport extends SprayJsonSupport {
-  // import the default encoders for primitive types (Int, String, Lists etc)
 
-  import spray.json.DefaultJsonProtocol._
-
-  implicit val amountJsonFormat = jsonFormat1(Amount)
-  implicit val accountBalanceFormat = jsonFormat2(AccountBalance)
-}
 
 object AccountApi {
   def apply(group: ActorRef[AccountGroup.Command], system: ActorSystem[_]) = new AccountApi(group, system)
@@ -43,13 +36,14 @@ class AccountApi(private val group: ActorRef[AccountGroup.Command],
     accounts(),
     deposit(),
     withdraw(),
-    balance())
+    balance(),
+    history()
+  )
 
   // GET /accounts
   // returns AvailableAccount(..)
   private def accounts(): Route = path("accounts") {
-    import JsonSupport._
-    import spray.json.DefaultJsonProtocol._
+   import gr.fpas.bank.be.json.BankJsonProtocol._
 
     get {
       val f = group.ask[AccountGroup.Response](replyTo => RequestAccounts(replyTo)) // Ask the accountGroup actor
@@ -65,7 +59,28 @@ class AccountApi(private val group: ActorRef[AccountGroup.Command],
   // GET /account/<id>
   // returns AvailableAccount(..)
   private def balance(): Route = path("account" / Segment) { id =>
-    import JsonSupport._
+    import gr.fpas.bank.be.json.BankJsonProtocol._
+
+    get {
+      val f = group.ask[AccountGroup.Response](replyTo => RequestAccount(id, replyTo)) // Ask the accountGroup actor
+        .flatMap { // and then
+          case AvailableAccount(_, account) => // If success with AvailableAccount ask the accountHolder for its balance
+            account.ask[AccountHolder.Response](replyTo => GetBalance(id, replyTo))
+        }
+
+      onSuccess(f) {
+        case resp: AccountBalance =>
+          complete((StatusCodes.OK, resp))
+        case _ =>
+          complete(StatusCodes.BadRequest)
+      }
+    }
+  }
+
+  // GET /account/<id>/history
+  // returns AvailableAccount(..)
+  private def history(): Route = path("account" / Segment / "history") { id =>
+    import gr.fpas.bank.be.json.BankJsonProtocol._
 
     get {
       val f = group.ask[AccountGroup.Response](replyTo => RequestAccount(id, replyTo)) // Ask the accountGroup actor
@@ -86,7 +101,7 @@ class AccountApi(private val group: ActorRef[AccountGroup.Command],
   // POST /account/<accountId>/deposit
   // returns AvailableAccount(..)
   private def deposit(): Route = path("account" / Segment / "deposit") { id =>
-    import JsonSupport._
+    import gr.fpas.bank.be.json.BankJsonProtocol._
 
     post {
       entity(as[Amount]) { amount =>
@@ -100,7 +115,7 @@ class AccountApi(private val group: ActorRef[AccountGroup.Command],
             }
 
           onSuccess(f) {
-            case resp@AccountBalance(accountId, balance) =>
+            case resp@AccountBalance(accountId, balance, _) =>
               log.info("Deposit [{}]: {} => balance {}", accountId, amount, balance)
               complete((StatusCodes.OK, resp))
             case _ =>
@@ -114,7 +129,7 @@ class AccountApi(private val group: ActorRef[AccountGroup.Command],
   // POST /account/<accountId>/withdraw
   // returns AvailableAccount(..)
   private def withdraw(): Route = path("account" / Segment / "withdraw") { id =>
-    import JsonSupport._
+    import gr.fpas.bank.be.json.BankJsonProtocol._
 
     post {
       entity(as[Amount]) { amount =>
@@ -127,7 +142,7 @@ class AccountApi(private val group: ActorRef[AccountGroup.Command],
             }
 
           onSuccess(f) {
-            case resp@AccountBalance(accountId, balance) =>
+            case resp@AccountBalance(accountId, balance, _) =>
               log.info("Withdraw [{}]: {} => balance {}", accountId, amount, balance)
               complete((StatusCodes.OK, resp))
             case InsufficientFunds(accountId) =>

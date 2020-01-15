@@ -3,21 +3,20 @@ import {useEffect, useState} from 'react';
 export interface AccountBalance {
     accountId: string,
     balance: number,
-    at: Date
+    updated: Date
 }
 
 
 const useAccountByIdService: (id?: string, every?: number) => AccountBalance =
     (id?: string, every ?: number) => {
         const [result, setResult] = useState<AccountBalance>(
-            {accountId: '', balance: 0.0, at: new Date()}
+            {accountId: '', balance: 0.0, updated: new Date()}
         );
-
 
         const fetchAccountBalance = (id: string) => {
             fetch(`account/${id}`)
                 .then(resp => resp.json())
-                .then(resp => setResult({...resp, at: new Date()}))
+                .then(resp => setResult({...resp, updated: new Date(resp.updated)}))
                 .catch(error => console.log(error));
         };
 
