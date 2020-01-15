@@ -1,17 +1,16 @@
 package gr.fpas.bank.be
 
-import akka.actor.typed.{ActorRef, ActorSystem}
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.server.Route
-import akka.http.scaladsl.server.Directives._
 import akka.actor.typed.scaladsl.AskPattern._
+import akka.actor.typed.{ActorRef, ActorSystem}
+import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.Route
 import akka.util.Timeout
 import gr.fpas.bank.be.AccountGroup.{AccountsList, AvailableAccount, RequestAccount, RequestAccounts}
-import gr.fpas.bank.be.AccountHolder.{AccountBalance, Deposit, GetBalance, InsufficientFunds, Withdraw}
+import gr.fpas.bank.be.AccountHolder._
 
-import scala.concurrent.Future
 import scala.concurrent.duration._
+import akka.actor.typed.scaladsl.adapter._
 
 // Some REST dtos
 final case class Amount(amount: Double) // {"amount": 23.2}
@@ -26,6 +25,7 @@ object AccountApi {
 class AccountApi(private val group: ActorRef[AccountGroup.Command],
                  private val system: ActorSystem[_]) {
 
+  private lazy val accountHistory = AccountHistoryService(system.toClassic)
 
   // Needed for ask pattern and Futures
   implicit val timeout = Timeout(5.seconds) // usually we'd obtain the timeout from the system's configuration
@@ -40,10 +40,11 @@ class AccountApi(private val group: ActorRef[AccountGroup.Command],
     history()
   )
 
+
   // GET /accounts
   // returns AvailableAccount(..)
   private def accounts(): Route = path("accounts") {
-   import gr.fpas.bank.be.json.BankJsonProtocol._
+    import gr.fpas.bank.be.json.BankJsonProtocol._
 
     get {
       val f = group.ask[AccountGroup.Response](replyTo => RequestAccounts(replyTo)) // Ask the accountGroup actor
@@ -55,10 +56,9 @@ class AccountApi(private val group: ActorRef[AccountGroup.Command],
     }
   }
 
-
-  // GET /account/<id>
+  // GET /account/<id>/history
   // returns AvailableAccount(..)
-  private def balance(): Route = path("account" / Segment) { id =>
+  private def balance(): Route = path("account" / Segment ) { id =>
     import gr.fpas.bank.be.json.BankJsonProtocol._
 
     get {
@@ -78,25 +78,21 @@ class AccountApi(private val group: ActorRef[AccountGroup.Command],
   }
 
   // GET /account/<id>/history
-  // returns AvailableAccount(..)
-  private def history(): Route = path("account" / Segment / "history") { id =>
+  // returns Seq[AvailableAccount(..)]
+  private def history(): Route = path("account" / Segment/ "history") { id =>
     import gr.fpas.bank.be.json.BankJsonProtocol._
 
     get {
-      val f = group.ask[AccountGroup.Response](replyTo => RequestAccount(id, replyTo)) // Ask the accountGroup actor
-        .flatMap { // and then
-          case AvailableAccount(_, account) => // If success with AvailableAccount ask the accountHolder for its balance
-            account.ask[AccountHolder.Response](replyTo => GetBalance(id, replyTo))
-        }
+      val f = accountHistory.queryAccountHistory(id)
 
       onSuccess(f) {
-        case resp: AccountBalance =>
+        case resp =>
           complete((StatusCodes.OK, resp))
-        case _ =>
-          complete(StatusCodes.BadRequest)
       }
     }
   }
+
+
 
   // POST /account/<accountId>/deposit
   // returns AvailableAccount(..)
