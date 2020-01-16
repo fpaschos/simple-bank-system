@@ -83,6 +83,10 @@ Set up docker and postgresql.
 Add persistence jdbc dependencies and configuration.
 Make the **AccountHolder** a persisted actor.
 
+- [Part 4.2](/#)
+Implement **AccountHistoryService** that fetches account history from journal.
+
+
 ### [Resources](#resources)
 Of course this project is heavily influenced and inspired by the work of others.
 

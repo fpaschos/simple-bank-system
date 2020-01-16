@@ -56,7 +56,7 @@ class AccountApi(private val group: ActorRef[AccountGroup.Command],
     }
   }
 
-  // GET /account/<id>/history
+  // GET /account/<id>
   // returns AvailableAccount(..)
   private def balance(): Route = path("account" / Segment ) { id =>
     import gr.fpas.bank.be.json.BankJsonProtocol._
@@ -77,17 +77,18 @@ class AccountApi(private val group: ActorRef[AccountGroup.Command],
     }
   }
 
-  // GET /account/<id>/history
+  // GET /account/<id>/history?offset=0
+  // parameter offset is optional with default value zero
   // returns Seq[AvailableAccount(..)]
   private def history(): Route = path("account" / Segment/ "history") { id =>
     import gr.fpas.bank.be.json.BankJsonProtocol._
 
     get {
-      val f = accountHistory.queryAccountHistory(id)
-
-      onSuccess(f) {
-        case resp =>
-          complete((StatusCodes.OK, resp))
+      parameters('offset.?) { maybeOffset =>
+        val offset = maybeOffset.map{ str => str.toLong}.getOrElse(0)
+        val f = accountHistory.queryAccountHistory(id, offset)
+        onSuccess(f)(resp =>
+          complete((StatusCodes.OK, resp)))
       }
     }
   }

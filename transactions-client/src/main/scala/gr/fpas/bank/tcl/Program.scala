@@ -24,7 +24,7 @@ object Program extends App {
 
   val stream = Source.tick(0.second, 2.seconds, ()) // Every 2 seconds
     .mapConcat { // Generate random account commands (Deposit or Withdraw)
-      _ => mkRandomCommands(100, 50)
+      _ => mkRandomCommands(200, 500)
     }
     .mapAsync(parallelism = 30) { cmd => // For each command send a POST request with max 30 parallel
       postCommand(cmd)

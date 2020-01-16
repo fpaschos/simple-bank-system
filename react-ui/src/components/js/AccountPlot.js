@@ -1,4 +1,4 @@
-import {LineSeries, MarkSeries, XAxis, XYPlot, YAxis} from 'react-vis';
+import {MarkSeriesCanvas, LineSeriesCanvas,  MarkSeries, XAxis, XYPlot, YAxis} from 'react-vis';
 
 import 'react-vis/dist/style.css';
 
@@ -7,7 +7,7 @@ import {useWindowSize} from "../../services/hooks";
 
 // Using plain javascript for visual-vis components
 const AccountPlot = (props) => {
-    const {series, highlighted, highlightX} = props;
+    const {series} = props;
     const [width, setWidth] = useState(0);
     const [height, setHeight] = useState(0);
     const [highlightedX, setHighlightedX] = useState(null);
@@ -37,7 +37,8 @@ const AccountPlot = (props) => {
         <div style={{width: '100%', height: '100%'}}
              ref={ref}
         >
-            <span>{JSON.stringify(highlightedX)}</span>
+            <div>Total points: {series.length}</div>
+            <div>{JSON.stringify(highlightedX)}</div>
             <XYPlot
                 width={width}
                 height={height}
@@ -47,13 +48,13 @@ const AccountPlot = (props) => {
             >
                 <XAxis/>
                 <YAxis/>
-                <LineSeries
+                <LineSeriesCanvas
                     onNearestX={onNearestX}
                     data={series}
                 />
 
                 {highlightedX ?
-                    <LineSeries
+                    <LineSeriesCanvas
                         data={[
                             {x: highlightedX && highlightedX.x, y: yDomain[0]},
                             {x: highlightedX && highlightedX.x, y: yDomain[1]}
@@ -64,7 +65,7 @@ const AccountPlot = (props) => {
                     /> : null
                 }
                 {highlightedX ?
-                    <MarkSeries
+                    <MarkSeriesCanvas
                         data={[{
                             x: highlightedX && highlightedX.x,
                             y: highlightedX && series[highlightedX.i].y
