@@ -85,7 +85,7 @@ class AccountApi(private val group: ActorRef[AccountGroup.Command],
 
     get {
       parameters('offset.?) { maybeOffset =>
-        val offset = maybeOffset.map{ str => str.toLong}.getOrElse(0)
+        val offset: Long = maybeOffset.map{ str => str.toLong}.getOrElse(1)
         val f = accountHistory.queryAccountHistory(id, offset)
         onSuccess(f)(resp =>
           complete((StatusCodes.OK, resp)))

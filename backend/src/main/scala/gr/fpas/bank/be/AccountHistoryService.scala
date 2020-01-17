@@ -7,8 +7,8 @@ import akka.actor.ActorSystem
 import akka.persistence.jdbc.query.scaladsl.JdbcReadJournal
 import akka.persistence.query.{EventEnvelope, PersistenceQuery}
 import akka.stream.Materializer
-import akka.stream.scaladsl.{Flow, Keep, RunnableGraph, Sink, Source}
-import gr.fpas.bank.be.AccountHolder.{AccountBalance, Deposit, Deposited, Event, Withdrawed}
+import akka.stream.scaladsl.{Flow, Keep, Sink, Source}
+import gr.fpas.bank.be.AccountHolder.{AccountBalance, Deposited, Withdrawed}
 import gr.fpas.bank.be.domain.Domain.AccountHistory
 
 import scala.concurrent.Future
@@ -68,23 +68,19 @@ class AccountHistoryService(private val system: ActorSystem) {
             }
         }
 
-    // TODO extract offset
-    //
-    //    val lastOffset: Source[AccountBalance, Future[Long]] = events.viaMat(reconstructBalances)(Keep.right)
-    //
-    //    val series = events
-    //      .via(reconstructBalances).viaMat(Sink.seq)(Keep.right)
-    //
-    //    lastOffset.toMat(series).
-
     // Run the source via the reconstruct flow to a Sink.seq and collect
     // all the balances history stream in a future ( Cool!!!! )
-
-    events
+    val (offsetF, seriesF) = events
+      .alsoToMat(Sink.fold(0L)((_, ev) => ev.sequenceNr))(Keep.right)
       .via(reconstructBalances)
-      .runWith(Sink.seq)
-      .map { series =>
-        AccountHistory(accountId, series, series.size, offset, offset)
-      }
+      .toMat(Sink.seq)(Keep.both)
+      .run()
+
+    for {
+      series <- seriesF
+      lastOffset <- offsetF
+    } yield
+      AccountHistory(accountId, series, series.size, offset, lastOffset)
+
   }
 }

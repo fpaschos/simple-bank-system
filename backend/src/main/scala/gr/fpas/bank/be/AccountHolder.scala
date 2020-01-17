@@ -40,6 +40,7 @@ object AccountHolder {
   final case class Withdrawed(amount: Double, created: ZonedDateTime) extends Event
 
 
+
   // State
 
   sealed trait Account {
@@ -88,6 +89,7 @@ object AccountHolder {
 
 
     override def commandHandler(cmd: Command): Effect[Event, Account] = cmd match {
+
       case Deposit(accountId, amount, replyTo) =>
         Effect.persist(Deposited(amount, ZonedDateTime.now()))
           .thenReply(replyTo) { st => AccountBalance(accountId, st.balance, st.updated) }
@@ -133,6 +135,8 @@ object AccountHolder {
       commandHandler = (state, cmd) => state.commandHandler(cmd),
       eventHandler = (state, evt) => state.eventHandler(evt)
     )
+
+
   })
 }
 
