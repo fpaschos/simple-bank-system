@@ -1,4 +1,4 @@
-import {MarkSeriesCanvas, LineSeriesCanvas,  MarkSeries, XAxis, XYPlot, YAxis} from 'react-vis';
+import {LineSeries, MarkSeries, XAxis, XYPlot, YAxis} from 'react-vis';
 
 import 'react-vis/dist/style.css';
 
@@ -39,6 +39,7 @@ const AccountPlot = (props) => {
         >
             <div>Total points: {series.length}</div>
             <div>{JSON.stringify(highlightedX)}</div>
+
             <XYPlot
                 width={width}
                 height={height}
@@ -48,13 +49,13 @@ const AccountPlot = (props) => {
             >
                 <XAxis/>
                 <YAxis/>
-                <LineSeriesCanvas
+                <LineSeries
                     onNearestX={onNearestX}
                     data={series}
                 />
 
                 {highlightedX ?
-                    <LineSeriesCanvas
+                    <LineSeries
                         data={[
                             {x: highlightedX && highlightedX.x, y: yDomain[0]},
                             {x: highlightedX && highlightedX.x, y: yDomain[1]}
@@ -65,7 +66,7 @@ const AccountPlot = (props) => {
                     /> : null
                 }
                 {highlightedX ?
-                    <MarkSeriesCanvas
+                    <MarkSeries
                         data={[{
                             x: highlightedX && highlightedX.x,
                             y: highlightedX && series[highlightedX.i].y

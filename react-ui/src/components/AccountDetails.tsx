@@ -1,10 +1,9 @@
 import React, {FunctionComponent, useEffect, useState} from 'react';
 import useAccountByIdService from "../services/AccountByIdService";
-import {usePrevious} from "../services/hooks";
 import AccountPlot from './js/AccountPlot';
-import {AccountBalance} from "../model/model";
+import {AccountBalance, AccountHistory} from "../model/model";
 import useAccountHistoryByIdService from "../services/AccountHistoryByIdService";
-import moment from  'moment';
+import moment from 'moment';
 
 export interface Props {
     accountId?: string;
@@ -12,31 +11,28 @@ export interface Props {
 
 
 const AccountDetails: FunctionComponent<Props> = (props: Props) => {
-    const history = useAccountHistoryByIdService(props.accountId);
+    const history = useAccountHistoryByIdService(props.accountId, 1, 2000);
     const balance = useAccountByIdService(props.accountId, 2000);
 
-    // const prevBalance = usePrevious(balance) as AccountBalance;
+    const [aggregatedHistory, setAggregatedHistory] = useState<AccountHistory>(history);
 
-    const [balances, setBalances] = useState<AccountBalance[]>([]);
 
-    const series = history.map(b => ({y: b.balance, x: new Date(b.updated)}));
 
-    // useEffect(()  => {
-    //     if(!prevBalance) {
-    //         setBalances(bs => [...bs, balance]);
-    //         return
-    //     }
+    // useEffect(() => {
+    //     // Aggregate old and new samples for each iteration
+    //     const updatedHistory = {
+    //         size: aggregatedHistory.size + history.size,
+    //         startOffset: aggregatedHistory.startOffset,
+    //         endOffset: history.endOffset,
+    //         series: [...aggregatedHistory.series, ...history.series]
     //
-    //     if(prevBalance.accountId !== balance.accountId) {
-    //         setBalances([]);
-    //         return
-    //     }
+    //     };
+    //     setAggregatedHistory(updatedHistory);
+    // }, [history]);
     //
-    //     setBalances(bs => [...bs, balance]);
-    //
-    // },[prevBalance, balance]);
 
-
+    // Convert the updated history to (x,y) coordinates with date time
+    const series  = history.series.map(b => ({y: b.balance, x: new Date(b.updated)}));
 
     return (
         <>
@@ -45,7 +41,6 @@ const AccountDetails: FunctionComponent<Props> = (props: Props) => {
                     <h3>Account: {balance.accountId}</h3>
                     <h5>Balance: {balance.balance} &euro; </h5>
                     <h5>Last Update: {moment(balance.updated).format("DD/MM/YYYY hh:mm a")} </h5>
-
                     {series.length > 0  && <AccountPlot series={series}/> }
                 </>
             )}
