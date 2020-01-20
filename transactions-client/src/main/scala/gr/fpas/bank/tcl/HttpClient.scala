@@ -89,7 +89,7 @@ object HttpClient {
     (1 to num).iterator.map { _ =>
       val random = ThreadLocalRandom.current()
       val accountId = s"ACC_${random.nextInt(maxAccounts)}" // possible ids size  <=  maxAccounts
-      val amount = random.nextInt(10) // Only positive amounts <= 500
+      val amount = random.nextInt(10)  // Only positive amounts <= 500
 
       val isDeposit = random.nextBoolean()
 

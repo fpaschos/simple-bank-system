@@ -1,7 +1,7 @@
 import React, {FunctionComponent, useEffect, useState} from 'react';
 import useAccountByIdService from "../services/AccountByIdService";
 import AccountPlot from './js/AccountPlot';
-import {AccountBalance, AccountHistory} from "../model/model";
+import {AccountBalance} from "../model/model";
 import useAccountHistoryByIdService from "../services/AccountHistoryByIdService";
 import moment from 'moment';
 
@@ -13,26 +13,14 @@ export interface Props {
 const AccountDetails: FunctionComponent<Props> = (props: Props) => {
     const history = useAccountHistoryByIdService(props.accountId, 1, 2000);
     const balance = useAccountByIdService(props.accountId, 2000);
+    const [aggregatedHistory, setAggregatedHistory] = useState<AccountBalance[]>([]);
 
-    const [aggregatedHistory, setAggregatedHistory] = useState<AccountHistory>(history);
-
-
-
-    // useEffect(() => {
-    //     // Aggregate old and new samples for each iteration
-    //     const updatedHistory = {
-    //         size: aggregatedHistory.size + history.size,
-    //         startOffset: aggregatedHistory.startOffset,
-    //         endOffset: history.endOffset,
-    //         series: [...aggregatedHistory.series, ...history.series]
-    //
-    //     };
-    //     setAggregatedHistory(updatedHistory);
-    // }, [history]);
-    //
+    useEffect(() => {
+        setAggregatedHistory(prev => [...prev, ...history.series])
+    }, [history]);
 
     // Convert the updated history to (x,y) coordinates with date time
-    const series  = history.series.map(b => ({y: b.balance, x: new Date(b.updated)}));
+    const series  = aggregatedHistory.map(b => ({y: b.balance, x: new Date(b.updated)}));
 
     return (
         <>

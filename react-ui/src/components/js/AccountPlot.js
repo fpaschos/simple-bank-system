@@ -38,7 +38,7 @@ const AccountPlot = (props) => {
              ref={ref}
         >
             <div>Total points: {series.length}</div>
-            <div>{JSON.stringify(highlightedX)}</div>
+            {/*<div>{JSON.stringify(highlightedX)}</div>*/}
 
             <XYPlot
                 width={width}

@@ -69,8 +69,6 @@ const useAccountHistoryByIdService: (id?: string, offset?: number, every?: numbe
 
         const {lastOffset, result, request} = state;
 
-
-        //
         useEffect(() => {
             if (id && lastOffset !== null) {
                 fetchAccountHistory(id, lastOffset)

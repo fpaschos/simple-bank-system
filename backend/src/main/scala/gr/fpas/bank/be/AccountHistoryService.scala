@@ -1,14 +1,12 @@
 package gr.fpas.bank.be
 
-import java.time.ZonedDateTime
-
 import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.persistence.jdbc.query.scaladsl.JdbcReadJournal
 import akka.persistence.query.{EventEnvelope, PersistenceQuery}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Flow, Keep, Sink, Source}
-import gr.fpas.bank.be.AccountHolder.{AccountBalance, Deposited, Withdrawed}
+import gr.fpas.bank.be.AccountHolder.{AccountBalance, Created, Deposited, Withdrawed}
 import gr.fpas.bank.be.domain.Domain.AccountHistory
 
 import scala.concurrent.Future
@@ -53,20 +51,16 @@ class AccountHistoryService(private val system: ActorSystem) {
     // See https://stackoverflow.com/questions/37902354/akka-streams-state-in-a-flow
       Flow[EventEnvelope]
         .alsoToMat(Sink.fold(0L)((_, env) => env.sequenceNr))(Keep.right)
-        .statefulMapConcat { () =>
-          var state = AccountBalance(accountId, 0.0, ZonedDateTime.now())
-
-
-          envelop =>
-            envelop.event match {
-              case Deposited(amount, created) =>
-                state = state.copy(balance = state.balance + amount, updated = created)
-                List(state)
-              case Withdrawed(amount, created) =>
-                state = state.copy(balance = state.balance - amount, updated = created)
-                List(state)
-            }
+      .map {
+        _.event match {
+          case Created(id, balance, created) =>
+            AccountBalance(id, balance, created)
+          case Deposited(id, balance, amount, created) =>
+            AccountBalance(id, balance +  amount, created)
+          case Withdrawed(id, balance, amount, created) =>
+            AccountBalance(id, balance - amount, created )
         }
+      }
 
     // Run the source via the reconstruct flow to a Sink.seq and collect
     // all the balances history stream in a future ( Cool!!!! )
