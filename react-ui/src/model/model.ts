@@ -5,6 +5,7 @@ export interface AccountBalance {
 }
 
 export interface AccountHistory {
+    accountId: string;
     series: AccountBalance[];
     size: number;
     startOffset: number;

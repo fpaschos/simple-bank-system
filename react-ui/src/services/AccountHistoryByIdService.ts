@@ -1,7 +1,29 @@
-import {useCallback, useEffect, useReducer, useState} from 'react';
+import {useEffect, useReducer} from 'react';
 import {AccountHistory} from "../model/model";
-import {act} from "react-dom/test-utils";
 
+const emptyHistory: AccountHistory = {
+    accountId: '',
+    series: [],
+    size: 0,
+    startOffset: 0,
+    endOffset: 0
+};
+
+
+interface Action {
+    type: 'call' | 'result' | 'clear',
+    id?: string,
+    offset?: number,
+    payload?: AccountHistory
+}
+
+interface State {
+    accountId: string,
+    beginOffset: number,
+    lastOffset: number,
+    result: AccountHistory,
+    request: number,
+}
 
 const NOOP = () => {
 };
@@ -12,85 +34,73 @@ const fetchAccountHistory = (id: string, offset: number): Promise<AccountHistory
         .catch(error => console.log(error));
 };
 
-
-const emptyHistory: AccountHistory = {
-    series: [],
-    size: 0,
-    startOffset: 0,
-    endOffset: 0
-};
-
-
-interface Action {
-    type: 'call' | 'result',
-    payload?: AccountHistory
+const initial = (id: string, offset: number) => {
+    return <State>{
+        accountId: id,
+        result: emptyHistory,
+        beginOffset: offset,
+        lastOffset: offset,
+        request: 0
+    }
 }
-
-interface State {
-    result: AccountHistory,
-    beginOffset: number,
-    lastOffset: number | null,
-    request: number,
-}
-
 
 const reducer: React.Reducer<State, Action> = (state, action) => {
-    switch(action.type) {
+    switch (action.type) {
         case 'call': {
-            if(state.lastOffset === null){
-                return {...state, lastOffset: state.beginOffset, request: state.request + 1}
-            } else {
+            const {id} = action;
+            if(id) {
                 return {...state, lastOffset: state.result.endOffset, request: state.request + 1}
             }
+            return state;
+
         }
         case 'result': {
-            if(action.payload) {
+            if (action.payload) {
                 return {...state, result: action.payload}
             }
             return state;
         }
+        case 'clear': {
+            const {id, offset} = action;
+            if(id && offset) {
+                return initial(id, offset)
+
+            }
+        }
         default:
-            return state
+            return state;
     }
 };
 
-const useAccountHistoryByIdService: (id?: string, offset?: number, every?: number) => AccountHistory =
-    (id?: string, offset?: number, every?: number) => {
-        const initial: State = {
-            result: emptyHistory,
-            beginOffset: offset ? offset : 1,
-            lastOffset: null,
-            request: 0
-        };
+const useAccountHistoryByIdService: (id: string, offset?: number, every?: number) => AccountHistory =
+    (id: string, offset?: number, every?: number) => {
 
 
-        const [state, dispatch] = useReducer(reducer, initial);
+        const [state, dispatch] = useReducer(reducer, initial(id, offset ? offset : 1));
 
 
-        const {lastOffset, result, request} = state;
+        const {accountId, result, lastOffset, request} = state;
 
         useEffect(() => {
-            if (id && lastOffset !== null) {
-                fetchAccountHistory(id, lastOffset)
-                    .then((resp: AccountHistory) => {
-                       dispatch({type: 'result', payload: resp})
-                    })
-            }
-        },[id, lastOffset, dispatch, request]);
+            fetchAccountHistory(id, lastOffset)
+                .then((resp: AccountHistory) => {
+                    dispatch({type: 'result', payload: resp})
+                })
+        }, [accountId, lastOffset, request, dispatch]);
 
         useEffect(() => {
+            dispatch({type: 'clear', id, offset});
             if (every) {
-                dispatch({type: 'call'});
                 const timer = setInterval(() => {
-                        dispatch({type: 'call'});
-                    }, every);
+                    dispatch({type: 'call', id});
+                }, every);
                 return () => clearTimeout(timer);
             } else {
-                dispatch({type: 'call'});
+                dispatch({type: 'call', id});
                 return NOOP;
             }
 
-        }, [every, dispatch]);
+        }, [every, dispatch, id]);
 
         return result;
     };
