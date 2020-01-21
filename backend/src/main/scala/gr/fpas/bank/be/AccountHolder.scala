@@ -27,7 +27,7 @@ object AccountHolder {
   sealed trait Response
 
   // Respond with the current balance of an account
-  final case class AccountBalance(accountId: String, balance: Double) extends Response
+  final case class AccountBalance(accountId: String, balance: Double, updated: ZonedDateTime) extends Response
 
   final case class InsufficientFunds(accountId: String) extends Response
 
@@ -35,15 +35,19 @@ object AccountHolder {
   // The persisted events stored in the event sourcing store
   sealed trait Event extends CborSerialized
 
-  final case class Deposited(amount: Double, created: ZonedDateTime) extends Event
+  final case class Created(accountId: String, balance: Double, created: ZonedDateTime) extends Event
 
-  final case class Withdrawed(amount: Double, created: ZonedDateTime) extends Event
+  final case class Deposited(accountId: String,  balance: Double, amount: Double,created: ZonedDateTime) extends Event
+
+  final case class Withdrawed(accountId: String, balance: Double, amount: Double,  created: ZonedDateTime) extends Event
+
 
 
   // State
 
   sealed trait Account {
     val balance: Double
+    val updated: ZonedDateTime // Last update time
 
     def commandHandler(cmd: Command): Effect[Event, Account]
 
@@ -52,11 +56,21 @@ object AccountHolder {
 
   final case class EmptyAccount(accountId: String) extends Account {
     override val balance: Double = 0.0
+    override val updated: ZonedDateTime = ZonedDateTime.now()
 
     override def commandHandler(cmd: Command): Effect[Event, Account] = cmd match {
       case Deposit(accountId, amount, replyTo) =>
-        Effect.persist(Deposited(amount, ZonedDateTime.now()))
-          .thenReply(replyTo) { st => AccountBalance(accountId, st.balance) }
+
+        // The first time that we deposit in an empty account it "activates" and
+        // also persists a created event with the same timestamp
+        val now = ZonedDateTime.now()
+        val firstDepositEvents = Seq(
+          Created(accountId, balance, now),
+          Deposited(accountId, balance, amount, now)
+        )
+
+        Effect.persist(firstDepositEvents)
+          .thenReply(replyTo) { st => AccountBalance(accountId, st.balance, updated = st.updated) }
 
       case Withdraw(accountId, _, replyTo) =>
         Effect.none
@@ -64,12 +78,13 @@ object AccountHolder {
 
       case GetBalance(accountId, replyTo) =>
         Effect.none
-          .thenReply(replyTo) { st => AccountBalance(accountId, st.balance) }
+          .thenReply(replyTo) { st => AccountBalance(accountId, st.balance, updated = st.updated) }
     }
 
     override def eventHandler(evt: Event): Account = evt match {
-      case Deposited(amount, created) => ActiveAccount(accountId, amount, created)
-      case _ => this
+      case Created(accountId, balance, created) => ActiveAccount(accountId, balance, created)
+      case Deposited(accountId, _, amount, created) => ActiveAccount(accountId, amount , created)
+      case _ => this // Ignore withdraw events on this state
     }
   }
 
@@ -86,15 +101,15 @@ object AccountHolder {
 
 
     override def commandHandler(cmd: Command): Effect[Event, Account] = cmd match {
+
       case Deposit(accountId, amount, replyTo) =>
-        Effect.persist(Deposited(amount, ZonedDateTime.now()))
-          .thenReply(replyTo) { st => AccountBalance(accountId, st.balance) }
+        Effect.persist(Deposited(accountId, balance, amount, ZonedDateTime.now()))
+          .thenReply(replyTo) { st => AccountBalance(accountId, st.balance, st.updated) }
 
       case Withdraw(accountId, amount, replyTo) =>
-
         if (canWithdraw(amount)) {
-          Effect.persist(Withdrawed(amount, ZonedDateTime.now()))
-            .thenReply(replyTo) { st => AccountBalance(accountId, st.balance) }
+          Effect.persist(Withdrawed(accountId, balance, amount, ZonedDateTime.now()))
+            .thenReply(replyTo) { st => AccountBalance(accountId, st.balance, st.updated) }
         } else {
           Effect.none
             .thenReply(replyTo) { _ => InsufficientFunds(accountId) }
@@ -102,12 +117,13 @@ object AccountHolder {
 
       case GetBalance(accountId, replyTo) =>
         Effect.none
-          .thenReply(replyTo) { st => AccountBalance(accountId, st.balance) }
+          .thenReply(replyTo) { st => AccountBalance(accountId, st.balance, st.updated) }
     }
 
     override def eventHandler(evt: Event): Account = evt match {
       case wd: Withdrawed => update(wd)
       case dp: Deposited => update(dp)
+      case _ => this  // Ignore created events on this state
     }
   }
 
@@ -122,7 +138,7 @@ object AccountHolder {
   def apply(accountId: String): Behavior[Command] = Behaviors.setup(ctx => {
     // Define the initial state
     val initial = EmptyAccount(accountId)
-    ctx.log.info("AccountHolder {} STARTING BALANCE 0.0", initial.balance)
+    ctx.log.info("AccountHolder {} STARTING")
 
 
     EventSourcedBehavior[Command, Event, Account](

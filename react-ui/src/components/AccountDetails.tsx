@@ -1,53 +1,30 @@
-import React, {FunctionComponent, useEffect, useState} from 'react';
-import useAccountByIdService, {AccountBalance} from "../services/AccountByIdService";
-import {usePrevious} from "../services/hooks";
-import AccountPlot from './js/AccountPlot';
-
-export interface Props {
-    accountId?: string;
-}
-
+import React, {FunctionComponent} from 'react';
+import useAccountByIdService from "../services/AccountByIdService";
+import moment from 'moment';
+import AccountDetailsGraph from "./AccountDetailsGraph";
 
 const AccountDetails: FunctionComponent<Props> = (props: Props) => {
-    const balance = useAccountByIdService(props.accountId, 1000);
-
-    const prevBalance = usePrevious(balance) as AccountBalance;
-
-    const [balances, setBalances] = useState<AccountBalance[]>([]);
-
-    const plotData = balances.map(b => ({y: b.balance, x: b.at}));
-
-    useEffect(()  => {
-        if(!prevBalance) {
-            setBalances(bs => [...bs, balance]);
-            return
-        }
-
-        if(prevBalance.accountId !== balance.accountId) {
-            setBalances([]);
-            return
-        }
-
-        setBalances(bs => [...bs, balance]);
-
-    },[prevBalance, balance]);
-
+    const balance = useAccountByIdService(props.accountId, 2000);
     return (
         <>
             {props.accountId && (
                 <>
                     <h3>Account: {balance.accountId}</h3>
-                    <h4>Balance: {balance.balance} &euro;</h4>
-
-                    {plotData && <AccountPlot data={plotData}/> }
+                    <h5>Balance: {balance.balance} &euro; </h5>
+                    <h5>Last Update: {moment(balance.updated).format("DD/MM/YYYY hh:mm a")} </h5>
+                    <AccountDetailsGraph accountId={props.accountId}/>
                 </>
             )}
 
             {!props.accountId &&
-                <p> Please select an account! </p>
+            <p> Please select an account! </p>
             }
         </>
     );
 };
+
+export interface Props {
+    accountId?: string;
+}
 
 export default AccountDetails;

@@ -1,23 +1,18 @@
 import {useEffect, useState} from 'react';
+import {AccountBalance} from "../model/model";
 
-export interface AccountBalance {
-    accountId: string,
-    balance: number,
-    at: Date
-}
 
 
 const useAccountByIdService: (id?: string, every?: number) => AccountBalance =
     (id?: string, every ?: number) => {
         const [result, setResult] = useState<AccountBalance>(
-            {accountId: '', balance: 0.0, at: new Date()}
+            {accountId: '', balance: 0.0, updated: 0}
         );
-
 
         const fetchAccountBalance = (id: string) => {
             fetch(`account/${id}`)
                 .then(resp => resp.json())
-                .then(resp => setResult({...resp, at: new Date()}))
+                .then(resp => setResult(resp))
                 .catch(error => console.log(error));
         };
 

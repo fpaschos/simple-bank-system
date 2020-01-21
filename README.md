@@ -75,13 +75,17 @@ Create a react-ui project to utilize the existing API.
 Change the logic of **AccountHolder** to accept only withdraws that 'fit' to the current balance.
 
 #### Persistence and Event Sourcing
-From now on a database is required see [above](https://github.com/fpaschos/simple-bank-system/#run-locally)
+From now on a database is required.
 
 ##### Section 4 - Event Sourcing using JDBC
 - [Part 4.1](https://github.com/fpaschos/simple-bank-system/tree/part-4.1)
 Set up docker and postgresql.
 Add persistence jdbc dependencies and configuration.
 Make the **AccountHolder** a persisted actor.
+
+- [Part 4.2](/#)
+Implement **AccountHistoryService** that fetches account history from journal.
+
 
 ### [Resources](#resources)
 Of course this project is heavily influenced and inspired by the work of others.
