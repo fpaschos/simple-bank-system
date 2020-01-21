@@ -48,7 +48,7 @@ const reducer: React.Reducer<State, Action> = (state, action) => {
     switch (action.type) {
         case 'call': {
             const {id, initialOffset} = action;
-            if(state.accountId == id) {
+            if(state.accountId === id) {
                 return {...state, lastOffset: state.result.endOffset, request: state.request + 1}
             } else {
                 return initial(id, initialOffset)
@@ -74,11 +74,11 @@ const useAccountHistoryByIdService: (id: string, offset?: number, every?: number
         const {accountId, result, lastOffset, request} = state;
 
         useEffect(() => {
-            fetchAccountHistory(id, lastOffset)
+            fetchAccountHistory(accountId, lastOffset)
                 .then((payload: AccountHistory) => {
                     dispatch({type: 'result', id: payload.accountId, initialOffset, payload})
                 })
-        }, [accountId, lastOffset, request, dispatch]);
+        }, [accountId, initialOffset, lastOffset, request, dispatch]);
 
         useEffect(() => {
             if (every) {
@@ -94,7 +94,7 @@ const useAccountHistoryByIdService: (id: string, offset?: number, every?: number
                 return NOOP;
             }
 
-        }, [every, dispatch, id]);
+        }, [every, dispatch, id, initialOffset]);
 
         return result;
     };

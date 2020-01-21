@@ -2,6 +2,7 @@ import React, {FunctionComponent} from 'react';
 import useAccountByIdService from "../services/AccountByIdService";
 import moment from 'moment';
 import AccountDetailsGraph from "./AccountDetailsGraph";
+import {Message, Statistic} from 'semantic-ui-react';
 
 const AccountDetails: FunctionComponent<Props> = (props: Props) => {
     const balance = useAccountByIdService(props.accountId, 2000);
@@ -9,16 +10,25 @@ const AccountDetails: FunctionComponent<Props> = (props: Props) => {
         <>
             {props.accountId && (
                 <>
-                    <h3>Account: {balance.accountId}</h3>
-                    <h5>Balance: {balance.balance} &euro; </h5>
-                    <h5>Last Update: {moment(balance.updated).format("DD/MM/YYYY hh:mm a")} </h5>
+                    <Statistic.Group size='mini' widths='three'>
+                        <Statistic color='purple'>
+                            <Statistic.Value>{balance.accountId}</Statistic.Value>
+                            <Statistic.Label>Account</Statistic.Label>
+                        </Statistic>
+                        <Statistic color='teal'>
+                            <Statistic.Value>{balance.balance}</Statistic.Value>
+                            <Statistic.Label>Balance</Statistic.Label>
+                        </Statistic>
+                        <Statistic color='grey'>
+                            <Statistic.Value>{moment(balance.updated).format("DD/MM/YYYY hh:mm:ss a")}</Statistic.Value>
+                            <Statistic.Label>Updated</Statistic.Label>
+                        </Statistic>
+
+                    </Statistic.Group>
                     <AccountDetailsGraph accountId={props.accountId}/>
                 </>
             )}
-
-            {!props.accountId &&
-            <p> Please select an account! </p>
-            }
+            {!props.accountId && <Message> Please select an account! </Message>}
         </>
     );
 };

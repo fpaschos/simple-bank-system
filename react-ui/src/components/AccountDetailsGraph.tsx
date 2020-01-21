@@ -2,6 +2,7 @@ import React, {FunctionComponent, useEffect, useReducer} from 'react';
 import AccountPlot from './js/AccountPlot';
 import {AccountBalance, AccountHistory} from "../model/model";
 import useAccountHistoryByIdService from "../services/AccountHistoryByIdService";
+import FlexibleComponent from "./FlexibleComponent";
 
 
 interface Action {
@@ -43,7 +44,9 @@ const AccountDetailsGraph: FunctionComponent<Props> = (props: Props) => {
 
     return (
         <>
-            {balanceSeries.length > 0 && <AccountPlot series={balanceSeries}/>}
+            {balanceSeries.length > 0 && <FlexibleComponent>
+                {{content: <AccountPlot series={balanceSeries}/> }}
+            </FlexibleComponent>}
         </>
     );
 };
