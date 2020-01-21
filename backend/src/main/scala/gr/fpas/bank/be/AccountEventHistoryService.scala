@@ -6,17 +6,16 @@ import akka.persistence.jdbc.query.scaladsl.JdbcReadJournal
 import akka.persistence.query.{EventEnvelope, PersistenceQuery}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Flow, Keep, Sink, Source}
-import gr.fpas.bank.be.AccountHolder.{AccountBalance, Created, Deposited, Withdrawed}
-import gr.fpas.bank.be.domain.Domain.AccountHistory
+import gr.fpas.bank.be.AccountHolder.Event
+import gr.fpas.bank.be.domain.Domain.AccountEventHistory
 
 import scala.concurrent.Future
 
-object AccountHistoryService {
-  def apply(system: ActorSystem): AccountHistoryService = new AccountHistoryService(system)
-
+object AccountEventHistoryService {
+  def apply(system: ActorSystem): AccountEventHistoryService = new AccountEventHistoryService(system)
 }
 
-class AccountHistoryService(private val system: ActorSystem) {
+class AccountEventHistoryService(private val system: ActorSystem) {
 
   implicit val mat = Materializer(system)
   implicit val ec = system.dispatcher
@@ -32,7 +31,7 @@ class AccountHistoryService(private val system: ActorSystem) {
    * @param offset    the starting offset to begin reading from the journal
    * @return Future[Acc]
    */
-  def query(accountId: String, offset: Long): Future[AccountHistory] = {
+  def query(accountId: String, offset: Long): Future[AccountEventHistory] = {
 
     // Details about the implementation at https://doc.akka.io/docs/akka/current/persistence-query.html\
     // Build a source of all the current events of the given accountId (=persistenceId)
@@ -43,21 +42,12 @@ class AccountHistoryService(private val system: ActorSystem) {
 
     // Build a stateful stream (flow) that reconstructs balances
     // from the events.
-    val reconstructBalances: Flow[EventEnvelope, AccountBalance, NotUsed] =
+    // (Something similar to how the AccountHolder updates its internal state)
 
-    // More details about this
-    // See https://stackoverflow.com/questions/37902354/akka-streams-state-in-a-flow
+    val reconstructBalances: Flow[EventEnvelope, Event, NotUsed] =
       Flow[EventEnvelope]
-      .map {
-        _.event match {
-          case Created(id, balance, created) =>
-            AccountBalance(id, balance, created)
-          case Deposited(id, balance, amount, created) =>
-            AccountBalance(id, balance +  amount, created)
-          case Withdrawed(id, balance, amount, created) =>
-            AccountBalance(id, balance - amount, created )
-        }
-      }
+      .map(_.event)
+      .collect{ case ev:Event => ev}
 
     // Run the source via the reconstruct flow to a Sink.seq and collect
     // all the balances history stream in a future ( Cool!!!! )
@@ -71,7 +61,6 @@ class AccountHistoryService(private val system: ActorSystem) {
       series <- seriesF
       lastOffset <- offsetF
     } yield
-      AccountHistory(accountId, series, series.size, offset, lastOffset)
-
+      AccountEventHistory(accountId, series, series.size, offset, lastOffset)
   }
 }
