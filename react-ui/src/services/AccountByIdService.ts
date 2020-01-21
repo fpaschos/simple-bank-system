@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {AccountBalance} from "../model/model";
+import {AccountBalance} from '../model/model';
 
 
 

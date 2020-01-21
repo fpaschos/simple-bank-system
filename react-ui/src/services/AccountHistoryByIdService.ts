@@ -11,9 +11,9 @@ const emptyHistory: AccountHistory = {
 
 
 interface Action {
-    type: 'call' | 'result' | 'clear',
-    id?: string,
-    offset?: number,
+    type: 'call' | 'result',
+    id: string,
+    initialOffset: number,
     payload?: AccountHistory
 }
 
@@ -35,23 +35,24 @@ const fetchAccountHistory = (id: string, offset: number): Promise<AccountHistory
 };
 
 const initial = (id: string, offset: number) => {
-    return <State>{
+    return  {
         accountId: id,
         result: emptyHistory,
         beginOffset: offset,
         lastOffset: offset,
         request: 0
-    }
-}
+    } as State
+};
 
 const reducer: React.Reducer<State, Action> = (state, action) => {
     switch (action.type) {
         case 'call': {
-            const {id} = action;
-            if(id) {
+            const {id, initialOffset} = action;
+            if(state.accountId == id) {
                 return {...state, lastOffset: state.result.endOffset, request: state.request + 1}
+            } else {
+                return initial(id, initialOffset)
             }
-            return state;
 
         }
         case 'result': {
@@ -59,13 +60,6 @@ const reducer: React.Reducer<State, Action> = (state, action) => {
                 return {...state, result: action.payload}
             }
             return state;
-        }
-        case 'clear': {
-            const {id, offset} = action;
-            if(id && offset) {
-                return initial(id, offset)
-
-            }
         }
         default:
             return state;
@@ -75,28 +69,28 @@ const reducer: React.Reducer<State, Action> = (state, action) => {
 const useAccountHistoryByIdService: (id: string, offset?: number, every?: number) => AccountHistory =
     (id: string, offset?: number, every?: number) => {
 
-
-        const [state, dispatch] = useReducer(reducer, initial(id, offset ? offset : 1));
-
-
+        const initialOffset = offset ? offset : 0;
+        const [state, dispatch] = useReducer(reducer, initial(id, initialOffset));
         const {accountId, result, lastOffset, request} = state;
 
         useEffect(() => {
             fetchAccountHistory(id, lastOffset)
-                .then((resp: AccountHistory) => {
-                    dispatch({type: 'result', payload: resp})
+                .then((payload: AccountHistory) => {
+                    dispatch({type: 'result', id: payload.accountId, initialOffset, payload})
                 })
         }, [accountId, lastOffset, request, dispatch]);
 
         useEffect(() => {
-            dispatch({type: 'clear', id, offset});
             if (every) {
+                dispatch({type: 'call', id, initialOffset});
                 const timer = setInterval(() => {
-                    dispatch({type: 'call', id});
+                    dispatch({type: 'call', id, initialOffset});
                 }, every);
-                return () => clearTimeout(timer);
+                return () =>  {
+                    clearTimeout(timer);
+                }
             } else {
-                dispatch({type: 'call', id});
+                dispatch({type: 'call', id, initialOffset});
                 return NOOP;
             }
 

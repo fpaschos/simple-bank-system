@@ -47,15 +47,15 @@ class AccountHistoryService(private val system: ActorSystem) {
 
     // More details about this
     // See https://stackoverflow.com/questions/37902354/akka-streams-state-in-a-flow
-      Flow[EventEnvelope]
+    Flow[EventEnvelope]
       .map {
         _.event match {
           case Created(id, balance, created) =>
             AccountBalance(id, balance, created)
           case Deposited(id, balance, amount, created) =>
-            AccountBalance(id, balance +  amount, created)
+            AccountBalance(id, balance + amount, created)
           case Withdrawed(id, balance, amount, created) =>
-            AccountBalance(id, balance - amount, created )
+            AccountBalance(id, balance - amount, created)
         }
       }
 
@@ -70,8 +70,15 @@ class AccountHistoryService(private val system: ActorSystem) {
     for {
       series <- seriesF
       lastOffset <- offsetF
-    } yield
-      AccountHistory(accountId, series, series.size, offset, lastOffset)
+    } yield {
+      //Handle the case where the stream wsas empty and no events where produced
+      val finalLastOffset = if (lastOffset == 0) {
+        offset
+      } else {
+        lastOffset
+      }
 
+      AccountHistory(accountId, series, series.size, offset, finalLastOffset)
+    }
   }
 }
