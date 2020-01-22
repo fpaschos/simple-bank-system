@@ -3,6 +3,7 @@ import {Borders, Highlight, Hint, LineSeries, MarkSeries, XAxis, XYPlot, YAxis} 
 import 'react-vis/dist/style.css';
 
 import React, {useState} from 'react';
+import moment from "moment";
 
 
 // Using plain javascript for visual-vis components
@@ -75,7 +76,7 @@ const AccountPlot = (props) => {
                     <Hint value={{x: highlightedX.x, y: yDomain[1]}}>
                         <div>
                             <div>Balance:</div>
-                            <div>{highlightedX.y} &euro;</div>
+                            <div>{highlightedX.y} &euro; at {moment(highlightedX.x).format("DD/MM/YYYY hh:mm:ss a")}</div>
                         </div>
                     </Hint> : null
                 }
