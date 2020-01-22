@@ -16,7 +16,7 @@ const AccountDetails: FunctionComponent<Props> = (props: Props) => {
                             <Statistic.Label>Account</Statistic.Label>
                         </Statistic>
                         <Statistic color='teal'>
-                            <Statistic.Value>{balance.balance}</Statistic.Value>
+                            <Statistic.Value>{balance.balance}  &euro;</Statistic.Value>
                             <Statistic.Label>Balance</Statistic.Label>
                         </Statistic>
                         <Statistic color='grey'>

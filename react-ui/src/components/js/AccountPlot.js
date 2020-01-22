@@ -1,4 +1,4 @@
-import {Borders, Highlight, LineSeries, MarkSeries, XAxis, XYPlot, YAxis} from 'react-vis';
+import {Borders, Highlight, Hint, LineSeries, MarkSeries, XAxis, XYPlot, YAxis} from 'react-vis';
 
 import 'react-vis/dist/style.css';
 
@@ -27,7 +27,7 @@ const AccountPlot = (props) => {
 
         <>
             {/*<div>Total points: {series.length}</div>*/}
-            <div>{JSON.stringify(drawLocation)}</div>
+            {/*<div>{JSON.stringify(drawLocation)}</div>*/}
 
             <XYPlot
                 width={props.width}
@@ -70,6 +70,14 @@ const AccountPlot = (props) => {
                         }]}
                         color='rgba(17,147,154,0.7)'
                     /> : null
+                }
+                {highlightedX ?
+                    <Hint value={{x: highlightedX.x, y: yDomain[1]}}>
+                        <div>
+                            <div>Balance:</div>
+                            <div>{highlightedX.y} &euro;</div>
+                        </div>
+                    </Hint> : null
                 }
                 <Highlight
                     enableY={false}
