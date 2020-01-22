@@ -26,6 +26,8 @@ class AccountApi(private val group: ActorRef[AccountGroup.Command],
                  private val system: ActorSystem[_]) {
 
   private lazy val accountHistory = AccountHistoryService(system.toClassic)
+  private lazy val accountEventHistory = AccountEventHistoryService(system.toClassic)
+
 
   // Needed for ask pattern and Futures
   implicit val timeout = Timeout(5.seconds) // usually we'd obtain the timeout from the system's configuration
@@ -37,7 +39,8 @@ class AccountApi(private val group: ActorRef[AccountGroup.Command],
     deposit(),
     withdraw(),
     balance(),
-    history()
+    history(),
+    eventsHistory()
   )
 
 
@@ -79,19 +82,37 @@ class AccountApi(private val group: ActorRef[AccountGroup.Command],
 
   // GET /account/<id>/history?offset=0
   // parameter offset is optional with default value zero
-  // returns Seq[AvailableAccount(..)]
+  // returns AccountHistory
   private def history(): Route = path("account" / Segment/ "history") { id =>
     import gr.fpas.bank.be.json.BankJsonProtocol._
 
     get {
       parameters('offset.?) { maybeOffset =>
         val offset: Long = maybeOffset.map{ str => str.toLong}.getOrElse(1)
-        val f = accountHistory.queryAccountHistory(id, offset)
+        val f = accountHistory.query(id, offset)
         onSuccess(f)(resp =>
           complete((StatusCodes.OK, resp)))
       }
     }
   }
+
+
+  // GET /account/<id>/history/event?offset=0
+  // parameter offset is optional with default value zero
+  // returns AccountEventHistory
+  private def eventsHistory(): Route = path("account" / Segment/ "event"/ "history") { id =>
+    import gr.fpas.bank.be.json.BankJsonProtocol._
+
+    get {
+      parameters('offset.?) { maybeOffset =>
+        val offset: Long = maybeOffset.map{ str => str.toLong}.getOrElse(1)
+        val f = accountEventHistory.query(id, offset)
+        onSuccess(f)(resp =>
+          complete((StatusCodes.OK, resp)))
+      }
+    }
+  }
+
 
 
 

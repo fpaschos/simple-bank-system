@@ -1,9 +1,8 @@
 import React, {FunctionComponent, useEffect, useReducer} from 'react';
-import useAccountByIdService from "../services/AccountByIdService";
 import AccountPlot from './js/AccountPlot';
 import {AccountBalance, AccountHistory} from "../model/model";
 import useAccountHistoryByIdService from "../services/AccountHistoryByIdService";
-import moment from 'moment';
+import FlexibleComponent from "./FlexibleComponent";
 
 
 interface Action {
@@ -13,23 +12,28 @@ interface Action {
 
 interface State {
     accountId: string;
+    offset: number;
     balanceSeries: AccountBalance[];
 }
 
 
 const reducer: React.Reducer<State, Action> = (state, action) => {
-    const {accountId, series} = action.payload;
+    const {accountId, series, endOffset} = action.payload;
 
     if (state.accountId !== accountId) {
-        return {accountId, balanceSeries: series}
+        return {accountId, balanceSeries: series, offset: endOffset}
     } else {
-        return {accountId, balanceSeries: [...state.balanceSeries, ...series]}
+        if(state.offset === endOffset) {
+
+            return state
+        }
+        return {accountId, balanceSeries: [...state.balanceSeries, ...series], offset: endOffset}
     }
 };
 
 const AccountDetailsGraph: FunctionComponent<Props> = (props: Props) => {
-    const history = useAccountHistoryByIdService(props.accountId, 1, 2000);
-    const [aggregatedHistory, dispatch] = useReducer(reducer, {accountId: '', balanceSeries: []});
+    const history = useAccountHistoryByIdService(props.accountId, 0, 2000);
+    const [aggregatedHistory, dispatch] = useReducer(reducer, {accountId: '', offset: 0,  balanceSeries: []});
 
     useEffect(() => {
         dispatch({type: 'append', payload: history})
@@ -40,7 +44,9 @@ const AccountDetailsGraph: FunctionComponent<Props> = (props: Props) => {
 
     return (
         <>
-            {balanceSeries.length > 0 && <AccountPlot series={balanceSeries}/>}
+            {balanceSeries.length > 0 && <FlexibleComponent>
+                {{content: <AccountPlot series={balanceSeries}/> }}
+            </FlexibleComponent>}
         </>
     );
 };

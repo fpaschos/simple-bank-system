@@ -33,7 +33,7 @@ object AccountHolder {
 
 
   // The persisted events stored in the event sourcing store
-  sealed trait Event extends CborSerialized
+  sealed trait Event extends Product with CborSerialized
 
   final case class Created(accountId: String, balance: Double, created: ZonedDateTime) extends Event
 
