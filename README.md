@@ -6,7 +6,7 @@ Some articles hopefully will be produced by this code base explaining the whole 
 The purpose of this repository is to be familiarized with the new [akka-typed](https://doc.akka.io/docs/akka/current/typed/index.html) API.
 
 ### [Final implementation](#final-implementation)
-![Capture](https://github.com/fpaschos/simple-bank-system/blob/master/docs/images/capture-1.gif)
+![Capture](https://github.com/fpaschos/simple-bank-system/blob/master/docs/images/capture-2.gif)
 
 ### [How to run the code locally](#run-locally)
 You should checkout to the lastest **master** branch.
@@ -83,9 +83,9 @@ Set up docker and postgresql.
 Add persistence jdbc dependencies and configuration.
 Make the **AccountHolder** a persisted actor.
 
-- [Part 4.2](/#)
+- [Part 4.2](https://github.com/fpaschos/simple-bank-system/tree/part-4.2)
 Implement **AccountHistoryService** that fetches account history from journal.
-
+Updated the ```react-ui``` to display the persisted account history with  polling.
 
 ### [Resources](#resources)
 Of course this project is heavily influenced and inspired by the work of others.
