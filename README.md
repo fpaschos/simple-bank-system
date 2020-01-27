@@ -87,6 +87,9 @@ Make the **AccountHolder** a persisted actor.
 Implement **AccountHistoryService** that fetches account history from journal.
 Updated the ```react-ui``` to display the persisted account history with  polling.
 
+- [Part 4.3](https://github.com/fpaschos/simple-bank-system/tree/part-4.3)
+Fix the existing unit tests to use in memory persistence journal.
+
 ### [Resources](#resources)
 Of course this project is heavily influenced and inspired by the work of others.
 
