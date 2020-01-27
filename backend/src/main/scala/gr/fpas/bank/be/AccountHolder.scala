@@ -26,9 +26,9 @@ object AccountHolder {
 
   // Transfers reserves excesses specific messages
 
-  final case class Reserve(accountId: String, amount: Double, txId: String, otherAccount: String, replyTo: ActorRef[Response]) extends Command
+  final case class RequestReserve(accountId: String, amount: Double, txId: String, otherAccount: String, replyTo: ActorRef[Response]) extends Command
 
-  final case class Excess(accountId: String, amount: Double, txId: String, otherAccount: String, replyTo: ActorRef[Response]) extends Command
+  final case class RequestExcess(accountId: String, amount: Double, txId: String, otherAccount: String, replyTo: ActorRef[Response]) extends Command
 
   final case class CompleteTransfer(accountId: String, txId: String) extends Command
 
@@ -144,8 +144,8 @@ object AccountHolder {
         // also persists a created event with the same timestamp
         val now = ZonedDateTime.now()
         val firstDepositEvents = Seq(
-          Created(accountId, balance, now),
-          Deposited(accountId, balance, amount, now)
+          Created(accountId, balance, reserves, excesses,now),
+          Deposited(accountId, amount, balance, reserves, excesses, now)
         )
 
         Effect.persist(firstDepositEvents)
@@ -159,15 +159,15 @@ object AccountHolder {
         Effect.none
           .thenReply(replyTo) { _.asAccountBalance }
 
-      case Reserve(_, _, _, _, replyTo) =>
+      case RequestReserve(_, _, _, _, replyTo) =>
         Effect.none
           .thenReply(replyTo) { _ => InsufficientFunds(accountId) }
 
-      case Excess =>
+      case RequestExcess => ???
     }
 
     override def eventHandler(evt: Event): Account = evt match {
-      case Created(accountId, balance, created) =>
+      case Created(accountId, _, _, _,  created) =>
         ActiveAccount(accountId, balance, reserves, excesses, created)
 
       case Deposited(accountId, _, amount, created) =>
