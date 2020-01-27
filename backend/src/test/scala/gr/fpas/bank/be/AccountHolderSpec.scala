@@ -1,17 +1,19 @@
 package gr.fpas.bank.be
 
+import akka.actor.testkit.typed.scaladsl.LogCapturing
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import gr.fpas.bank.be.AccountHolder.{AccountBalance, Deposit, GetBalance, InsufficientFunds, Response, Withdraw}
 import org.scalatest.WordSpecLike
 
-class AccountHolderSpec extends ScalaTestWithActorTestKit with WordSpecLike {
+
+class AccountHolderSpec extends ScalaTestWithActorTestKit(ConfigOverrides.inMemoryPersistence) with WordSpecLike with LogCapturing {
 
   "AccountHolder actor" should {
 
     "should initialized with zero balance" in {
       val accountId = "ACC_1"
 
-      val actor = spawn(AccountHolder("ACC_1"))
+      val actor = spawn(AccountHolder(accountId))
 
       val probe = createTestProbe[Response]
 
@@ -23,9 +25,9 @@ class AccountHolderSpec extends ScalaTestWithActorTestKit with WordSpecLike {
     }
 
     "should add the deposit amount to the balance" in {
-      val accountId = "ACC_1"
+      val accountId = "ACC_2"
 
-      val actor = spawn(AccountHolder("ACC_1"))
+      val actor = spawn(AccountHolder(accountId))
 
       val probe = createTestProbe[Response]
 
@@ -40,9 +42,9 @@ class AccountHolderSpec extends ScalaTestWithActorTestKit with WordSpecLike {
     }
 
     "should subtract the withdraw amount from the balance" in {
-      val accountId = "ACC_1"
+      val accountId = "ACC_3"
 
-      val actor = spawn(AccountHolder("ACC_1"))
+      val actor = spawn(AccountHolder(accountId))
 
       val probe = createTestProbe[Response]
 
@@ -60,9 +62,9 @@ class AccountHolderSpec extends ScalaTestWithActorTestKit with WordSpecLike {
     }
 
     "should respond with  InsufficientFunds message when the balance does not suffice for withdraw" in {
-      val accountId = "ACC_1"
+      val accountId = "ACC_4"
 
-      val actor = spawn(AccountHolder("ACC_1"))
+      val actor = spawn(AccountHolder(accountId))
 
       val probe = createTestProbe[Response]
 

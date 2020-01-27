@@ -1,10 +1,11 @@
 package gr.fpas.bank.be
 
+import akka.actor.testkit.typed.scaladsl.LogCapturing
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import gr.fpas.bank.be.AccountGroup._
 import org.scalatest.WordSpecLike
 
-class AccountGroupSpec extends ScalaTestWithActorTestKit with WordSpecLike {
+class AccountGroupSpec extends ScalaTestWithActorTestKit(ConfigOverrides.inMemoryPersistence) with WordSpecLike with LogCapturing {
 
   "AccountGroup actor" should {
 
@@ -16,7 +17,7 @@ class AccountGroupSpec extends ScalaTestWithActorTestKit with WordSpecLike {
       actor ! RequestAccounts(probe.ref)
       val response = probe.expectMessageType[AccountsList]
 
-      response.accounts.size shouldBe 0
+      response.accounts.size shouldBe 0.0
     }
 
     "be able to create a new account holder" in {
