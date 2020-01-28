@@ -1,16 +1,21 @@
 package gr.fpas.bank.be.json
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import gr.fpas.bank.be.AccountHolder.{AccountBalance, Created, Deposited, Event, Withdrawed}
+import gr.fpas.bank.be.AccountHolder.{AccountBalance, Created, Deposited, Event, Excess, Reserved, TransferCancelled, TransferCompleted, Withdrawed}
 import gr.fpas.bank.be.Amount
 import gr.fpas.bank.be.domain.Domain.{AccountEventHistory, AccountHistory}
 import spray.json._
 
 object BankJsonProtocol extends SprayJsonSupport with DefaultJsonProtocol with ZonedDateTimeProtocol {
   // Events hson  serialization support
-  implicit val eventCreatedFormat = jsonFormat3(Created)
-  implicit val eventWithdrawedFormat = jsonFormat4(Withdrawed)
-  implicit val eventDepositedFormat = jsonFormat4(Deposited)
+  implicit val eventCreatedFormat = jsonFormat5(Created)
+  implicit val eventWithdrawedFormat = jsonFormat6(Withdrawed)
+  implicit val eventDepositedFormat = jsonFormat6(Deposited)
+  implicit val eventReservedFormat = jsonFormat8(Reserved)
+  implicit val eventExcessFormat = jsonFormat8(Excess)
+  implicit val eventTransferCompletedFormat = jsonFormat8(TransferCompleted)
+  implicit val eventTransferCancelledFormat = jsonFormat8(TransferCancelled)
+
 
 
   // ADT hierachy format from
@@ -21,6 +26,10 @@ object BankJsonProtocol extends SprayJsonSupport with DefaultJsonProtocol with Z
         case Seq(JsString("Created")) => json.convertTo[Created]
         case Seq(JsString("Withdrawed")) => json.convertTo[Withdrawed]
         case Seq(JsString("Deposited")) => json.convertTo[Deposited]
+        case Seq(JsString("Excess")) => json.convertTo[Excess]
+        case Seq(JsString("Reserved")) => json.convertTo[Reserved]
+        case Seq(JsString("TransferCompleted")) => json.convertTo[TransferCompleted]
+        case Seq(JsString("TransferCancelled")) => json.convertTo[TransferCancelled]
       }
 
 
@@ -33,7 +42,7 @@ object BankJsonProtocol extends SprayJsonSupport with DefaultJsonProtocol with Z
   }
 
   implicit val amountJsonFormat = jsonFormat1(Amount)
-  implicit val accountBalanceFormat = jsonFormat3(AccountBalance)
+  implicit val accountBalanceFormat = jsonFormat5(AccountBalance)
   implicit val accountHistoryFormat = jsonFormat5(AccountHistory)
   implicit val accountEventHistoryFormat = jsonFormat5(AccountEventHistory)
 }

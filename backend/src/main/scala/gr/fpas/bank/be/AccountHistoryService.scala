@@ -6,7 +6,7 @@ import akka.persistence.jdbc.query.scaladsl.JdbcReadJournal
 import akka.persistence.query.{EventEnvelope, PersistenceQuery}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Flow, Keep, Sink, Source}
-import gr.fpas.bank.be.AccountHolder.{AccountBalance, Created, Deposited, Withdrawed}
+import gr.fpas.bank.be.AccountHolder.{AccountBalance, Created, Deposited, Excess, Reserved, TransferCancelled, TransferCompleted, Withdrawed}
 import gr.fpas.bank.be.domain.Domain.AccountHistory
 
 import scala.concurrent.Future
@@ -48,14 +48,22 @@ class AccountHistoryService(private val system: ActorSystem) {
     // More details about this
     // See https://stackoverflow.com/questions/37902354/akka-streams-state-in-a-flow
     Flow[EventEnvelope]
-      .map {
+      .collect {
         _.event match {
-          case Created(id, balance, created) =>
-            AccountBalance(id, balance, created)
-          case Deposited(id, balance, amount, created) =>
-            AccountBalance(id, balance + amount, created)
-          case Withdrawed(id, balance, amount, created) =>
-            AccountBalance(id, balance - amount, created)
+          case Created(id, balance, reserves, excesses, created) =>
+            AccountBalance(id, balance, reserves, excesses, created)
+          case Deposited(id, balance, reserves, excesses, amount, created) =>
+            AccountBalance(id, balance + amount, reserves, excesses, created)
+          case Withdrawed(id, balance, reserves, excesses, amount, created) =>
+            AccountBalance(id, balance - amount, reserves, excesses, created)
+          case Reserved(id, _, _, balance, reserves, excesses, amount, created) =>
+            AccountBalance(id, balance, reserves + amount, excesses, created)
+          case Excess(id, _, _, balance, reserves, excesses, amount, created) =>
+            AccountBalance(id, balance, reserves, excesses + amount, created)
+//          case TransferCompleted(id, balance, reserves, excesses, amount, created) =>
+//            AccountBalance(id, balance - amount, reserves, excesses, created)
+//          case TransferCancelled(id, balance, reserves, excesses, amount, created) =>
+//            AccountBalance(id, balance - amount, reserves, excesses, created)
         }
       }
 
