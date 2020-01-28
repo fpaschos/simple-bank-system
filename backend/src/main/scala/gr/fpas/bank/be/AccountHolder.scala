@@ -190,6 +190,7 @@ object AccountHolder {
 
     override def commandHandler(cmd: Command): Effect[Event, Account] = cmd match {
 
+        // TODO complete logic
       case Deposit(accountId, amount, replyTo) =>
         Effect.persist(Deposited(accountId, balance, reserves, excesses, amount, ZonedDateTime.now()))
           .thenReply(replyTo) {
@@ -230,21 +231,58 @@ object AccountHolder {
       pendingExcesses.get(txId).orElse(pendingReserves.get(txId))
     }
 
+    /**
+     * Update the updated time state in case of Created event.
+     * @param evt the event
+     * @return An updated ActiveAccount instance
+     */
     private def update(evt: Created): ActiveAccount =
       copy(updated = evt.created)
 
+    /**
+     * Update the balance state in case of Deposited event.
+     * @param evt the event
+     * @return An updated ActiveAccount instance
+     */
     private def update(evt: Deposited): ActiveAccount =
       copy(balance = balance + evt.amount, updated = evt.created)
 
+    /**
+     * Update the balance state in case of Withdrawed event.
+     * @param evt the event
+     * @return An updated ActiveAccount instance
+     */
     private def update(evt: Withdrawed): ActiveAccount =
       copy(balance = balance - evt.amount, updated = evt.created)
 
+    /**
+     * Update the total reserves state in case of Reserved event.
+     * @param evt the event
+     * @return An updated ActiveAccount instance
+     */
     private def update(evt: Reserved): ActiveAccount =
       copy(reserves = reserves + evt.reserves, pendingReserves = pendingReserves + ((evt.txId, evt)), updated = evt.created)
 
+
+
+    /**
+     * Update the total excesses state in case of Excess event.
+     * @param evt the event
+     * @return An updated ActiveAccount instance
+     */
     private def update(evt: Excess): ActiveAccount =
       copy(excesses = excesses + evt.excesses, pendingExcesses = pendingExcesses + ((evt.txId, evt)), updated = evt.created)
 
+
+    /**
+     * Apply the state changes in case of TransferCompleted event.
+     * When an transfer is marked completed we search for an active Excess or Reserve with the same txId (transaction id)
+     * We then apply the update to the balance and mark the transfer as processed and clear the pending excess/reserve list
+     * accordingly.
+     *
+     * @param evt the event
+     * @return An updated ActiveAccount instance
+     */
     private def update(evt: TransferCompleted): ActiveAccount =
       findPendingReserveOrExcess(evt.txId).collect {
         case excess: Excess =>
@@ -267,6 +305,14 @@ object AccountHolder {
 
 
 
+    /**
+     * Apply the state changes in case of TransferCancelled event.
+     * When an transfer is marked cancelled we search for an active Excess or Reserve with the same txId (transaction id)
+     * We revert the pending excess/reseve operation and mark the transfer as processed.
+     *
+     * @param evt the event
+     * @return An updated ActiveAccount instance
+     */
     private def update(evt: TransferCancelled): ActiveAccount =
       findPendingReserveOrExcess(evt.txId).collect {
         case excess: Excess =>

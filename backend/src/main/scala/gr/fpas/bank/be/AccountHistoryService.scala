@@ -60,6 +60,8 @@ class AccountHistoryService(private val system: ActorSystem) {
             AccountBalance(id, balance, reserves + amount, excesses, created)
           case Excess(id, _, _, balance, reserves, excesses, amount, created) =>
             AccountBalance(id, balance, reserves, excesses + amount, created)
+
+            // TODO handle transfer complete messages (needs statefulMapConcat)
 //          case TransferCompleted(id, balance, reserves, excesses, amount, created) =>
 //            AccountBalance(id, balance - amount, reserves, excesses, created)
 //          case TransferCancelled(id, balance, reserves, excesses, amount, created) =>
